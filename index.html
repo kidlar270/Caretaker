@@ -1,1 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caretaker Tenant Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .modal-backdrop { background-color: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 pb-20">
 
+    <!-- Navigation -->
+    <nav class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 h-16 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <div class="bg-green-600 p-2 rounded-lg text-white">
+                    <i data-lucide="home" size="20"></i>
+                </div>
+                <span class="font-bold text-xl text-slate-800">Caretaker KES</span>
+            </div>
+            <div class="flex items-center gap-4">
+                <div id="dueSoonBadge" class="hidden flex items-center gap-1 bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-bold animate-pulse">
+                    <i data-lucide="bell" size="14"></i> <span id="dueSoonCount">0</span> Due Soon
+                </div>
+                <button class="p-2 text-slate-400 hover:text-red-500">
+                    <i data-lucide="log-out" size="20"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-start justify-between">
+                <div>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Active Tenants</p>
+                    <p id="stat-active" class="text-xl font-black text-slate-800">0</p>
+                </div>
+                <div class="bg-slate-50 p-2 rounded-xl text-blue-500"><i data-lucide="users"></i></div>
+            </div>
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-start justify-between">
+                <div>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Paid (Active)</p>
+                    <p id="stat-paid" class="text-xl font-black text-green-600">0</p>
+                </div>
+                <div class="bg-slate-50 p-2 rounded-xl text-green-500"><i data-lucide="check-circle"></i></div>
+            </div>
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-start justify-between">
+                <div>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Due Soon</p>
+                    <p id="stat-due" class="text-xl font-black text-orange-600">0</p>
+                </div>
+                <div class="bg-slate-50 p-2 rounded-xl text-orange-500"><i data-lucide="alert-circle"></i></div>
+            </div>
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-start justify-between">
+                <div>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Total Collected</p>
+                    <p id="stat-revenue" class="text-xl font-black text-slate-800">KES 0</p>
+                </div>
+                <div class="bg-slate-50 p-2 rounded-xl text-purple-500"><i data-lucide="credit-card"></i></div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="flex flex-col md:flex-row gap-4 justify-between items-center mb-6">
+            <div class="flex flex-1 gap-2 w-full md:w-auto">
+                <div class="relative flex-1 md:max-w-xs">
+                    <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size="18"></i>
+                    <input 
+                        type="text" 
+                        id="searchInput"
+                        placeholder="Search name, room..." 
+                        class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl shadow-sm outline-none focus:ring-2 focus:ring-green-500"
+                    >
+                </div>
+                <div class="flex bg-white border border-slate-200 rounded-xl p-1 shadow-sm">
+                    <button onclick="setStatusFilter('Active')" id="btnFilterActive" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-green-600 text-white">Active</button>
+                    <button onclick="setStatusFilter('Inactive')" id="btnFilterInactive" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-500">Archive</button>
+                </div>
+            </div>
+            <button onclick="openTenantModal()" class="w-full md:w-auto flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-green-100">
+                <i data-lucide="user-plus" size="18"></i> Add Tenant
+            </button>
+        </div>
+
+        <!-- Table -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-200">
+                            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Tenant</th>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Location</th>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Financials</th>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tenantTableBody" class="divide-y divide-slate-100">
+                        <!-- Content loaded via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Tenant Modal -->
+    <div id="tenantModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 modal-backdrop">
+        <div class="bg-white rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl">
+            <div class="p-6 border-b border-slate-100 bg-slate-50/50">
+                <h2 id="modalTitle" class="text-xl font-bold text-slate-800">Register New Tenant</h2>
+            </div>
+            <form id="tenantForm" class="p-6 space-y-4">
+                <input type="hidden" id="editId">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="col-span-2">
+                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-1">Full Name</label>
+                        <input id="formName" required class="w-full px-4 py-2.5 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-green-500">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-1">Phone Number</label>
+                        <input id="formPhone" required placeholder="07..." class="w-full px-4 py-2.5 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-green-500">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-1">Monthly Rent (KES)</label>
+                        <input id="formRent" required type="number" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl font-bold outline-none focus:ring-2 focus:ring-green-500">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-1">Floor Level</label>
+                        <input id="formFloor" required placeholder="e.g. 2nd" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-green-500">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-1">Room Number</label>
+                        <input id="formRoom" required placeholder="e.g. B12" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-green-500">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-1">Room Type</label>
+                        <select id="formType" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-green-500">
+                            <option>Bedsitter</option>
+                            <option>Single Room</option>
+                            <option>1 Bedroom</option>
+                            <option>2 Bedroom</option>
+                            <option>Shop/Commercial</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-1">Lease Start Date</label>
+                        <input id="formDate" required type="date" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-green-500">
+                    </div>
+                </div>
+                <div class="flex gap-3 pt-4 border-t border-slate-100">
+                    <button type="button" onclick="closeTenantModal()" class="flex-1 py-3 bg-slate-100 font-bold rounded-xl text-slate-600 hover:bg-slate-200">Cancel</button>
+                    <button type="submit" class="flex-1 py-3 bg-green-600 font-bold rounded-xl text-white shadow-lg shadow-green-100 hover:bg-green-700">Save Tenant</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div id="paymentModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 modal-backdrop">
+        <div class="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl">
+            <div class="p-6 border-b border-slate-100 bg-green-50">
+                <h2 class="text-xl font-bold text-green-800 flex items-center gap-2"><i data-lucide="credit-card"></i> Record Payment</h2>
+                <p id="paymentTenantName" class="text-sm text-green-600 font-medium"></p>
+            </div>
+            <form id="paymentForm" class="p-6 space-y-4">
+                <input type="hidden" id="paymentTenantId">
+                <div>
+                    <label class="block text-[10px] font-black text-slate-400 uppercase mb-1">Amount Paid (KES)</label>
+                    <input id="payAmount" required type="number" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl font-black text-lg outline-none focus:ring-2 focus:ring-green-500">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black text-slate-400 uppercase mb-1">Payment Method</label>
+                    <select id="payMethod" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl outline-none">
+                        <option>M-Pesa</option>
+                        <option>Bank Transfer</option>
+                        <option>Cash</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black text-slate-400 uppercase mb-1">Reference Code</label>
+                    <input id="payRef" placeholder="Transaction ID" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl outline-none">
+                </div>
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="closePaymentModal()" class="flex-1 py-3 bg-slate-100 font-bold rounded-xl text-slate-600">Cancel</button>
+                    <button type="submit" class="flex-1 py-3 bg-green-600 font-bold rounded-xl text-white shadow-lg">Confirm</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, onSnapshot, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global variables provided by environment
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'caretaker-manager-001';
+        
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let tenants = [];
+        let currentStatusFilter = 'Active';
+        let currentSearch = '';
+        let currentUser = null;
+
+        // Auth initialization
+        async function initAuth() {
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                await signInWithCustomToken(auth, __initial_auth_token);
+            } else {
+                await signInAnonymously(auth);
+            }
+        }
+
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            if (user) {
+                startDataSync();
+            }
+        });
+
+        initAuth();
+
+        function startDataSync() {
+            const tenantsRef = collection(db, 'artifacts', appId, 'public', 'data', 'tenants');
+            onSnapshot(query(tenantsRef), (snapshot) => {
+                tenants = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                render();
+            }, (error) => console.error("Sync Error:", error));
+        }
+
+        // State Management & Rendering
+        window.render = function() {
+            const filtered = tenants.filter(t => {
+                const searchStr = `${t.name} ${t.roomNumber} ${t.floor}`.toLowerCase();
+                const matchesSearch = searchStr.includes(currentSearch.toLowerCase());
+                const isActive = t.isActive !== false;
+                const matchesFilter = currentStatusFilter === 'All' || 
+                                     (currentStatusFilter === 'Active' && isActive) || 
+                                     (currentStatusFilter === 'Inactive' && !isActive);
+                return matchesSearch && matchesFilter;
+            });
+
+            // Update Stats
+            const activeOnes = tenants.filter(t => t.isActive !== false);
+            const paidCount = activeOnes.filter(t => t.paymentStatus === 'Paid').length;
+            const dueSoonCount = activeOnes.filter(t => t.paymentStatus !== 'Paid' && isDueSoon(t.dueDate)).length;
+            const totalRevenue = tenants.reduce((acc, t) => {
+                const history = t.paymentHistory || [];
+                return acc + history.reduce((hAcc, h) => hAcc + Number(h.amount || 0), 0);
+            }, 0);
+
+            document.getElementById('stat-active').innerText = activeOnes.length;
+            document.getElementById('stat-paid').innerText = paidCount;
+            document.getElementById('stat-due').innerText = dueSoonCount;
+            document.getElementById('stat-revenue').innerText = formatKES(totalRevenue);
+            
+            const badge = document.getElementById('dueSoonBadge');
+            if (dueSoonCount > 0) {
+                badge.classList.remove('hidden');
+                document.getElementById('dueSoonCount').innerText = dueSoonCount;
+            } else {
+                badge.classList.add('hidden');
+            }
+
+            const tbody = document.getElementById('tenantTableBody');
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="px-6 py-12 text-center text-slate-400">No records found.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(t => {
+                const isActive = t.isActive !== false;
+                const dueSoon = isDueSoon(t.dueDate) && t.paymentStatus !== 'Paid';
+                
+                return `
+                    <tr class="hover:bg-slate-50 transition-colors ${!isActive ? 'opacity-75 bg-slate-50/50' : ''}">
+                        <td class="px-6 py-4">
+                            <div class="font-bold text-slate-800">${t.name}</div>
+                            <div class="text-xs text-slate-500 font-medium">${t.phone || 'No phone'}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex flex-col">
+                                <span class="text-sm font-bold text-slate-700">Room ${t.roomNumber || '-'}</span>
+                                <span class="text-xs text-slate-500 flex items-center gap-1">
+                                    <i data-lucide="layers" style="width:12px; height:12px;"></i> Floor ${t.floor || '-'} • ${t.roomType}
+                                </span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="font-bold text-green-700">${formatKES(t.rentAmount)}</div>
+                            <div class="text-[10px] flex items-center gap-1 font-bold ${dueSoon ? 'text-orange-600' : 'text-slate-400'}">
+                                <i data-lucide="calendar" style="width:12px; height:12px;"></i> 
+                                ${t.fullDueDate ? formatDateString(t.fullDueDate) : `Day ${t.dueDate}`} • ${t.paymentStatus || 'Pending'}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <div class="flex justify-end gap-1">
+                                ${isActive ? `
+                                    <button onclick="openPaymentModal('${t.id}')" title="Record Payment" class="p-2 text-green-600 hover:bg-green-50 rounded-lg"><i data-lucide="history" size="18"></i></button>
+                                    <button onclick="toggleActiveStatus('${t.id}')" title="Archive" class="p-2 text-slate-400 hover:text-orange-600 rounded-lg"><i data-lucide="user-minus" size="18"></i></button>
+                                ` : `
+                                    <button onclick="toggleActiveStatus('${t.id}')" title="Restore" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"><i data-lucide="user-check" size="18"></i></button>
+                                `}
+                                <button onclick="openTenantModal('${t.id}')" class="p-2 text-slate-400 hover:text-blue-600"><i data-lucide="edit-3" size="18"></i></button>
+                                <button onclick="handleDelete('${t.id}')" class="p-2 text-slate-400 hover:text-red-600"><i data-lucide="trash-2" size="18"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            
+            lucide.createIcons();
+        }
+
+        // Helpers
+        function formatKES(amount) {
+            return new Intl.NumberFormat('en-KE', { style: 'currency', currency: 'KES', minimumFractionDigits: 0 }).format(amount);
+        }
+
+        function isDueSoon(dueDay) {
+            if (!dueDay) return false;
+            const today = new Date();
+            const currentDay = today.getDate();
+            const diff = parseInt(dueDay) - cur
