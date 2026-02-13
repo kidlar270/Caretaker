@@ -1,335 +1,390 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Caretaker Tenant Manager</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-        body { font-family: 'Inter', sans-serif; }
-        .modal-backdrop { background-color: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); }
-    </style>
-</head>
-<body class="bg-slate-50 text-slate-900 pb-20">
+ import React, { useState, useEffect, useMemo } from 'react';
+import { initializeApp } from 'firebase/app';
+import { 
+  getFirestore, 
+  collection, 
+  doc, 
+  addDoc, 
+  updateDoc, 
+  deleteDoc, 
+  onSnapshot, 
+  query
+} from 'firebase/firestore';
+import { 
+  getAuth, 
+  signInWithCustomToken, 
+  signInAnonymously, 
+  onAuthStateChanged 
+} from 'firebase/auth';
+import { 
+  UserPlus, 
+  Users, 
+  CreditCard, 
+  Home, 
+  Search, 
+  Trash2, 
+  Edit3, 
+  CheckCircle, 
+  LogOut, 
+  Bell, 
+  History, 
+  AlertCircle
+} from 'lucide-react';
 
-    <!-- Navigation -->
-    <nav class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 h-16 flex justify-between items-center">
-            <div class="flex items-center gap-2">
-                <div class="bg-green-600 p-2 rounded-lg text-white">
-                    <i data-lucide="home" size="20"></i>
-                </div>
-                <span class="font-bold text-xl text-slate-800">Caretaker KES</span>
-            </div>
-            <div class="flex items-center gap-4">
-                <div id="dueSoonBadge" class="hidden flex items-center gap-1 bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-bold animate-pulse">
-                    <i data-lucide="bell" size="14"></i> <span id="dueSoonCount">0</span> Due Soon
-                </div>
-                <button class="p-2 text-slate-400 hover:text-red-500">
-                    <i data-lucide="log-out" size="20"></i>
-                </button>
-            </div>
-        </div>
-    </nav>
+/**
+ * YOUR FIREBASE CONFIGURATION
+ * Linked to project: kevo-4a76d
+ */
+const firebaseConfig = {
+  apiKey: "AIzaSyDX5KduBww9009TgJYS_sYEzzAIO2gefZk",
+  authDomain: "kevo-4a76d.firebaseapp.com",
+  projectId: "kevo-4a76d",
+  storageBucket: "kevo-4a76d.firebasestorage.app",
+  messagingSenderId: "970910385321",
+  appId: "1:970910385321:web:ef9ecd26e6a6628dea55b8",
+  measurementId: "G-6S32FGFHHT"
+};
 
-    <main class="max-w-7xl mx-auto px-4 py-8">
-        <!-- Stats Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-start justify-between">
-                <div>
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Active Tenants</p>
-                    <p id="stat-active" class="text-xl font-black text-slate-800">0</p>
-                </div>
-                <div class="bg-slate-50 p-2 rounded-xl text-blue-500"><i data-lucide="users"></i></div>
-            </div>
-            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-start justify-between">
-                <div>
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Paid (Active)</p>
-                    <p id="stat-paid" class="text-xl font-black text-green-600">0</p>
-                </div>
-                <div class="bg-slate-50 p-2 rounded-xl text-green-500"><i data-lucide="check-circle"></i></div>
-            </div>
-            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-start justify-between">
-                <div>
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Due Soon</p>
-                    <p id="stat-due" class="text-xl font-black text-orange-600">0</p>
-                </div>
-                <div class="bg-slate-50 p-2 rounded-xl text-orange-500"><i data-lucide="alert-circle"></i></div>
-            </div>
-            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-start justify-between">
-                <div>
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Total Collected</p>
-                    <p id="stat-revenue" class="text-xl font-black text-slate-800">KES 0</p>
-                </div>
-                <div class="bg-slate-50 p-2 rounded-xl text-purple-500"><i data-lucide="credit-card"></i></div>
-            </div>
-        </div>
+// Initialize Firebase services
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-        <!-- Controls -->
-        <div class="flex flex-col md:flex-row gap-4 justify-between items-center mb-6">
-            <div class="flex flex-1 gap-2 w-full md:w-auto">
-                <div class="relative flex-1 md:max-w-xs">
-                    <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size="18"></i>
-                    <input 
-                        type="text" 
-                        id="searchInput"
-                        placeholder="Search name, room..." 
-                        class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl shadow-sm outline-none focus:ring-2 focus:ring-green-500"
-                    >
-                </div>
-                <div class="flex bg-white border border-slate-200 rounded-xl p-1 shadow-sm">
-                    <button onclick="setStatusFilter('Active')" id="btnFilterActive" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-green-600 text-white">Active</button>
-                    <button onclick="setStatusFilter('Inactive')" id="btnFilterInactive" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-500">Archive</button>
-                </div>
-            </div>
-            <button onclick="openTenantModal()" class="w-full md:w-auto flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-green-100">
-                <i data-lucide="user-plus" size="18"></i> Add Tenant
-            </button>
-        </div>
+// Use the environment appId or fallback to your project name
+const appId = typeof __app_id !== 'undefined' ? __app_id : 'kevo-4a76d';
 
-        <!-- Table -->
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="w-full text-left">
-                    <thead>
-                        <tr class="bg-slate-50 border-b border-slate-200">
-                            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Tenant</th>
-                            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Location</th>
-                            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Financials</th>
-                            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tenantTableBody" class="divide-y divide-slate-100">
-                        <!-- Content loaded via JS -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </main>
+export default function App() {
+  const [user, setUser] = useState(null);
+  const [tenants, setTenants] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('Active'); 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [editingTenant, setEditingTenant] = useState(null);
+  const [selectedTenantForPayment, setSelectedTenantForPayment] = useState(null);
 
-    <!-- Tenant Modal -->
-    <div id="tenantModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 modal-backdrop">
-        <div class="bg-white rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl">
-            <div class="p-6 border-b border-slate-100 bg-slate-50/50">
-                <h2 id="modalTitle" class="text-xl font-bold text-slate-800">Register New Tenant</h2>
-            </div>
-            <form id="tenantForm" class="p-6 space-y-4">
-                <input type="hidden" id="editId">
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="col-span-2">
-                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-1">Full Name</label>
-                        <input id="formName" required class="w-full px-4 py-2.5 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-green-500">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-1">Phone Number</label>
-                        <input id="formPhone" required placeholder="07..." class="w-full px-4 py-2.5 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-green-500">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-1">Monthly Rent (KES)</label>
-                        <input id="formRent" required type="number" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl font-bold outline-none focus:ring-2 focus:ring-green-500">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-1">Floor Level</label>
-                        <input id="formFloor" required placeholder="e.g. 2nd" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-green-500">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-1">Room Number</label>
-                        <input id="formRoom" required placeholder="e.g. B12" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-green-500">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-1">Room Type</label>
-                        <select id="formType" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-green-500">
-                            <option>Bedsitter</option>
-                            <option>Single Room</option>
-                            <option>1 Bedroom</option>
-                            <option>2 Bedroom</option>
-                            <option>Shop/Commercial</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-1">Lease Start Date</label>
-                        <input id="formDate" required type="date" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-green-500">
-                    </div>
-                </div>
-                <div class="flex gap-3 pt-4 border-t border-slate-100">
-                    <button type="button" onclick="closeTenantModal()" class="flex-1 py-3 bg-slate-100 font-bold rounded-xl text-slate-600 hover:bg-slate-200">Cancel</button>
-                    <button type="submit" class="flex-1 py-3 bg-green-600 font-bold rounded-xl text-white shadow-lg shadow-green-100 hover:bg-green-700">Save Tenant</button>
-                </div>
-            </form>
-        </div>
-    </div>
+  const [formData, setFormData] = useState({
+    name: '', phone: '', floor: '', roomNumber: '', roomType: 'Bedsitter',
+    rentAmount: '', dueDate: '1', fullDueDate: new Date().toISOString().split('T')[0],
+    isActive: true, paymentStatus: 'Pending'
+  });
 
-    <!-- Payment Modal -->
-    <div id="paymentModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 modal-backdrop">
-        <div class="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl">
-            <div class="p-6 border-b border-slate-100 bg-green-50">
-                <h2 class="text-xl font-bold text-green-800 flex items-center gap-2"><i data-lucide="credit-card"></i> Record Payment</h2>
-                <p id="paymentTenantName" class="text-sm text-green-600 font-medium"></p>
-            </div>
-            <form id="paymentForm" class="p-6 space-y-4">
-                <input type="hidden" id="paymentTenantId">
-                <div>
-                    <label class="block text-[10px] font-black text-slate-400 uppercase mb-1">Amount Paid (KES)</label>
-                    <input id="payAmount" required type="number" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl font-black text-lg outline-none focus:ring-2 focus:ring-green-500">
-                </div>
-                <div>
-                    <label class="block text-[10px] font-black text-slate-400 uppercase mb-1">Payment Method</label>
-                    <select id="payMethod" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl outline-none">
-                        <option>M-Pesa</option>
-                        <option>Bank Transfer</option>
-                        <option>Cash</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-[10px] font-black text-slate-400 uppercase mb-1">Reference Code</label>
-                    <input id="payRef" placeholder="Transaction ID" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl outline-none">
-                </div>
-                <div class="flex gap-3 pt-4">
-                    <button type="button" onclick="closePaymentModal()" class="flex-1 py-3 bg-slate-100 font-bold rounded-xl text-slate-600">Cancel</button>
-                    <button type="submit" class="flex-1 py-3 bg-green-600 font-bold rounded-xl text-white shadow-lg">Confirm</button>
-                </div>
-            </form>
-        </div>
-    </div>
+  const [paymentData, setPaymentData] = useState({
+    amount: '', date: new Date().toISOString().split('T')[0], method: 'M-Pesa', reference: ''
+  });
 
-    <!-- Firebase SDKs -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, onSnapshot, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // Global variables provided by environment
-        const firebaseConfig = JSON.parse(__firebase_config);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'caretaker-manager-001';
-        
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        let tenants = [];
-        let currentStatusFilter = 'Active';
-        let currentSearch = '';
-        let currentUser = null;
-
-        // Auth initialization
-        async function initAuth() {
-            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                await signInWithCustomToken(auth, __initial_auth_token);
-            } else {
-                await signInAnonymously(auth);
-            }
+  // --- Authentication Lifecycle (Rule 3) ---
+  useEffect(() => {
+    const initAuth = async () => {
+      try {
+        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+          await signInWithCustomToken(auth, __initial_auth_token);
+        } else {
+          await signInAnonymously(auth);
         }
+      } catch (error) {
+        console.error("Authentication failed:", error);
+      }
+    };
+    initAuth();
+    const unsubscribe = onAuthStateChanged(auth, setUser);
+    return () => unsubscribe();
+  }, []);
 
-        onAuthStateChanged(auth, (user) => {
-            currentUser = user;
-            if (user) {
-                startDataSync();
-            }
+  // --- Real-time Data Sync (Rule 1 & 2) ---
+  useEffect(() => {
+    if (!user) return;
+
+    // Strict path structure for the preview environment
+    const collectionRef = collection(db, 'artifacts', appId, 'public', 'data', 'tenants');
+    const q = query(collectionRef);
+
+    const unsubscribe = onSnapshot(q, 
+      (snapshot) => {
+        setTenants(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      },
+      (error) => {
+        console.error("Firestore Sync Error:", error);
+      }
+    );
+    
+    return () => unsubscribe();
+  }, [user]);
+
+  const formatKES = (amount) => new Intl.NumberFormat('en-KE', { 
+    style: 'currency', 
+    currency: 'KES', 
+    minimumFractionDigits: 0 
+  }).format(amount);
+
+  const filteredTenants = useMemo(() => {
+    return tenants.filter(t => {
+      const searchStr = `${t.name} ${t.roomNumber} ${t.floor}`.toLowerCase();
+      const matchesSearch = searchStr.includes(searchTerm.toLowerCase());
+      const isActive = t.isActive !== false;
+      const matchesStatus = statusFilter === 'All' || 
+                           (statusFilter === 'Active' && isActive) || 
+                           (statusFilter === 'Inactive' && !isActive);
+      return matchesSearch && matchesStatus;
+    });
+  }, [tenants, searchTerm, statusFilter]);
+
+  const stats = useMemo(() => {
+    const active = tenants.filter(t => t.isActive !== false);
+    return {
+      total: active.length,
+      paid: active.filter(t => t.paymentStatus === 'Paid').length,
+      revenue: tenants.reduce((acc, curr) => acc + (curr.paymentHistory || []).reduce((hAcc, h) => hAcc + Number(h.amount || 0), 0), 0),
+      dueSoon: active.filter(t => t.paymentStatus !== 'Paid' && (parseInt(t.dueDate) - new Date().getDate() <= 7)).length
+    };
+  }, [tenants]);
+
+  const handleRecordPayment = async (e) => {
+    e.preventDefault();
+    if (!user || !selectedTenantForPayment) return;
+
+    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'tenants', selectedTenantForPayment.id);
+    try {
+      await updateDoc(docRef, {
+        paymentHistory: [
+          ...(selectedTenantForPayment.paymentHistory || []), 
+          { ...paymentData, id: crypto.randomUUID(), recordedAt: new Date().toISOString() }
+        ],
+        paymentStatus: 'Paid'
+      });
+      setIsPaymentModalOpen(false);
+    } catch (err) {
+      console.error("Payment Record Error:", err);
+    }
+  };
+
+  const handleSubmitTenant = async (e) => {
+    e.preventDefault();
+    if (!user) return;
+
+    const path = collection(db, 'artifacts', appId, 'public', 'data', 'tenants');
+    try {
+      if (editingTenant) {
+        const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'tenants', editingTenant.id);
+        await updateDoc(docRef, formData);
+      } else {
+        await addDoc(path, { 
+          ...formData, 
+          paymentHistory: [], 
+          createdAt: new Date().toISOString(),
+          createdBy: user.uid
         });
+      }
+      setIsModalOpen(false);
+    } catch (err) {
+      console.error("Tenant Submission Error:", err);
+    }
+  };
 
-        initAuth();
+  if (!user) return (
+    <div className="flex flex-col items-center justify-center min-h-screen space-y-4">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+      <p className="text-slate-500 font-medium">Connecting to Kevo-4a76d Database...</p>
+    </div>
+  );
 
-        function startDataSync() {
-            const tenantsRef = collection(db, 'artifacts', appId, 'public', 'data', 'tenants');
-            onSnapshot(query(tenantsRef), (snapshot) => {
-                tenants = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                render();
-            }, (error) => console.error("Sync Error:", error));
-        }
+  return (
+    <div className="min-h-screen bg-slate-50 pb-20">
+      <nav className="bg-white border-b p-4 sticky top-0 z-20 shadow-sm flex justify-between items-center">
+        <div className="flex items-center gap-2 font-bold text-xl text-slate-800">
+          <div className="bg-green-600 p-1.5 rounded-lg text-white">
+            <Home size={20}/>
+          </div>
+          <span>Caretaker KES</span>
+        </div>
+        <div className="flex gap-4 items-center">
+          {stats.dueSoon > 0 && (
+            <div className="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-bold animate-pulse flex items-center gap-1">
+              <Bell size={14}/> {stats.dueSoon} Due
+            </div>
+          )}
+          <button onClick={() => auth.signOut()} className="text-slate-400 hover:text-red-500 transition-colors">
+            <LogOut size={20}/>
+          </button>
+        </div>
+      </nav>
 
-        // State Management & Rendering
-        window.render = function() {
-            const filtered = tenants.filter(t => {
-                const searchStr = `${t.name} ${t.roomNumber} ${t.floor}`.toLowerCase();
-                const matchesSearch = searchStr.includes(currentSearch.toLowerCase());
-                const isActive = t.isActive !== false;
-                const matchesFilter = currentStatusFilter === 'All' || 
-                                     (currentStatusFilter === 'Active' && isActive) || 
-                                     (currentStatusFilter === 'Inactive' && !isActive);
-                return matchesSearch && matchesFilter;
-            });
+      <main className="max-w-7xl mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          <StatCard title="Active Tenants" value={stats.total} icon={<Users className="text-blue-500"/>} />
+          <StatCard title="Paid" value={stats.paid} icon={<CheckCircle className="text-green-500"/>} color="text-green-600" />
+          <StatCard title="Due Soon" value={stats.dueSoon} icon={<AlertCircle className="text-orange-500"/>} color="text-orange-600" />
+          <StatCard title="Total Collected" value={formatKES(stats.revenue)} icon={<CreditCard className="text-purple-500"/>} />
+        </div>
 
-            // Update Stats
-            const activeOnes = tenants.filter(t => t.isActive !== false);
-            const paidCount = activeOnes.filter(t => t.paymentStatus === 'Paid').length;
-            const dueSoonCount = activeOnes.filter(t => t.paymentStatus !== 'Paid' && isDueSoon(t.dueDate)).length;
-            const totalRevenue = tenants.reduce((acc, t) => {
-                const history = t.paymentHistory || [];
-                return acc + history.reduce((hAcc, h) => hAcc + Number(h.amount || 0), 0);
-            }, 0);
+        <div className="flex flex-col md:flex-row gap-4 mb-6">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-3 text-slate-400" size={18}/>
+            <input 
+              className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-green-500" 
+              placeholder="Search by name, room, or floor..." 
+              value={searchTerm} 
+              onChange={e => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <div className="flex bg-white border border-slate-200 rounded-xl p-1">
+            <button onClick={() => setStatusFilter('Active')} className={`px-4 py-1 rounded-lg text-sm font-bold transition-all ${statusFilter === 'Active' ? 'bg-green-600 text-white' : 'text-slate-500'}`}>Active</button>
+            <button onClick={() => setStatusFilter('Inactive')} className={`px-4 py-1 rounded-lg text-sm font-bold transition-all ${statusFilter === 'Inactive' ? 'bg-slate-600 text-white' : 'text-slate-500'}`}>Archive</button>
+          </div>
+          <button 
+            onClick={() => { setEditingTenant(null); setFormData({name: '', phone: '', floor: '', roomNumber: '', roomType: 'Bedsitter', rentAmount: '', dueDate: '1', fullDueDate: new Date().toISOString().split('T')[0], isActive: true, paymentStatus: 'Pending'}); setIsModalOpen(true); }} 
+            className="bg-green-600 hover:bg-green-700 text-white px-6 py-2.5 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-green-100 transition-all"
+          >
+            <UserPlus size={18}/> Add Tenant
+          </button>
+        </div>
 
-            document.getElementById('stat-active').innerText = activeOnes.length;
-            document.getElementById('stat-paid').innerText = paidCount;
-            document.getElementById('stat-due').innerText = dueSoonCount;
-            document.getElementById('stat-revenue').innerText = formatKES(totalRevenue);
-            
-            const badge = document.getElementById('dueSoonBadge');
-            if (dueSoonCount > 0) {
-                badge.classList.remove('hidden');
-                document.getElementById('dueSoonCount').innerText = dueSoonCount;
-            } else {
-                badge.classList.add('hidden');
-            }
-
-            const tbody = document.getElementById('tenantTableBody');
-            if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="px-6 py-12 text-center text-slate-400">No records found.</td></tr>`;
-                return;
-            }
-
-            tbody.innerHTML = filtered.map(t => {
-                const isActive = t.isActive !== false;
-                const dueSoon = isDueSoon(t.dueDate) && t.paymentStatus !== 'Paid';
-                
-                return `
-                    <tr class="hover:bg-slate-50 transition-colors ${!isActive ? 'opacity-75 bg-slate-50/50' : ''}">
-                        <td class="px-6 py-4">
-                            <div class="font-bold text-slate-800">${t.name}</div>
-                            <div class="text-xs text-slate-500 font-medium">${t.phone || 'No phone'}</div>
-                        </td>
-                        <td class="px-6 py-4">
-                            <div class="flex flex-col">
-                                <span class="text-sm font-bold text-slate-700">Room ${t.roomNumber || '-'}</span>
-                                <span class="text-xs text-slate-500 flex items-center gap-1">
-                                    <i data-lucide="layers" style="width:12px; height:12px;"></i> Floor ${t.floor || '-'} • ${t.roomType}
-                                </span>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4">
-                            <div class="font-bold text-green-700">${formatKES(t.rentAmount)}</div>
-                            <div class="text-[10px] flex items-center gap-1 font-bold ${dueSoon ? 'text-orange-600' : 'text-slate-400'}">
-                                <i data-lucide="calendar" style="width:12px; height:12px;"></i> 
-                                ${t.fullDueDate ? formatDateString(t.fullDueDate) : `Day ${t.dueDate}`} • ${t.paymentStatus || 'Pending'}
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 text-right">
-                            <div class="flex justify-end gap-1">
-                                ${isActive ? `
-                                    <button onclick="openPaymentModal('${t.id}')" title="Record Payment" class="p-2 text-green-600 hover:bg-green-50 rounded-lg"><i data-lucide="history" size="18"></i></button>
-                                    <button onclick="toggleActiveStatus('${t.id}')" title="Archive" class="p-2 text-slate-400 hover:text-orange-600 rounded-lg"><i data-lucide="user-minus" size="18"></i></button>
-                                ` : `
-                                    <button onclick="toggleActiveStatus('${t.id}')" title="Restore" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"><i data-lucide="user-check" size="18"></i></button>
-                                `}
-                                <button onclick="openTenantModal('${t.id}')" class="p-2 text-slate-400 hover:text-blue-600"><i data-lucide="edit-3" size="18"></i></button>
-                                <button onclick="handleDelete('${t.id}')" class="p-2 text-slate-400 hover:text-red-600"><i data-lucide="trash-2" size="18"></i></button>
-                            </div>
-                        </td>
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead className="bg-slate-50 border-b border-slate-200">
+                <tr>
+                  <th className="px-6 py-4 text-xs font-black text-slate-500 uppercase tracking-widest">Tenant</th>
+                  <th className="px-6 py-4 text-xs font-black text-slate-500 uppercase tracking-widest">Unit Info</th>
+                  <th className="px-6 py-4 text-xs font-black text-slate-500 uppercase tracking-widest">Financials</th>
+                  <th className="px-6 py-4 text-xs font-black text-slate-500 uppercase tracking-widest text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {filteredTenants.length === 0 ? (
+                  <tr><td colSpan="4" className="px-6 py-12 text-center text-slate-400 font-medium">No records matching your search.</td></tr>
+                ) : (
+                  filteredTenants.map(t => (
+                    <tr key={t.id} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="font-bold text-slate-800">{t.name}</div>
+                        <div className="text-xs text-slate-500 font-medium">{t.phone}</div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-sm font-bold text-slate-700">Room {t.roomNumber}</div>
+                        <div className="text-xs text-slate-400 font-medium">Floor {t.floor} • {t.roomType}</div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="font-bold text-green-700">{formatKES(t.rentAmount)}</div>
+                        <div className={`text-[10px] font-black uppercase ${t.paymentStatus === 'Paid' ? 'text-green-500' : 'text-orange-500'}`}>
+                          {t.paymentStatus || 'Pending'}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-right flex justify-end gap-1">
+                        <button 
+                          onClick={() => { setSelectedTenantForPayment(t); setPaymentData({...paymentData, amount: t.rentAmount}); setIsPaymentModalOpen(true); }} 
+                          title="Record Payment"
+                          className="text-green-600 hover:bg-green-50 p-2 rounded-lg transition-colors"
+                        >
+                          <History size={18}/>
+                        </button>
+                        <button 
+                          onClick={() => { setEditingTenant(t); setFormData(t); setIsModalOpen(true); }} 
+                          title="Edit Details"
+                          className="text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors"
+                        >
+                          <Edit3 size={18}/>
+                        </button>
+                        <button 
+                          onClick={async () => { if(window.confirm("Delete this record permanently?")) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'tenants', t.id)) }} 
+                          title="Delete"
+                          className="text-red-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-lg transition-colors"
+                        >
+                          <Trash2 size={18}/>
+                        </button>
+                      </td>
                     </tr>
-                `;
-            }).join('');
-            
-            lucide.createIcons();
-        }
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
 
-        // Helpers
-        function formatKES(amount) {
-            return new Intl.NumberFormat('en-KE', { style: 'currency', currency: 'KES', minimumFractionDigits: 0 }).format(amount);
-        }
+      {/* Tenant Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+          <form onSubmit={handleSubmitTenant} className="bg-white p-6 rounded-3xl w-full max-w-md shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-200">
+            <h2 className="text-xl font-bold text-slate-800">{editingTenant ? 'Edit Tenant' : 'Register New Tenant'}</h2>
+            <div className="space-y-3">
+              <div>
+                <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Full Name</label>
+                <input required className="w-full border border-slate-200 p-2.5 rounded-xl outline-none focus:ring-2 focus:ring-green-500" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})}/>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Phone Number</label>
+                  <input required className="w-full border border-slate-200 p-2.5 rounded-xl outline-none focus:ring-2 focus:ring-green-500" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})}/>
+                </div>
+                <div>
+                  <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Rent Amount (KES)</label>
+                  <input required className="w-full border border-slate-200 p-2.5 rounded-xl outline-none focus:ring-2 focus:ring-green-500 font-bold" type="number" value={formData.rentAmount} onChange={e => setFormData({...formData, rentAmount: e.target.value})}/>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Floor Level</label>
+                  <input required className="w-full border border-slate-200 p-2.5 rounded-xl outline-none focus:ring-2 focus:ring-green-500" value={formData.floor} onChange={e => setFormData({...formData, floor: e.target.value})}/>
+                </div>
+                <div>
+                  <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Room Number</label>
+                  <input required className="w-full border border-slate-200 p-2.5 rounded-xl outline-none focus:ring-2 focus:ring-green-500 font-bold" value={formData.roomNumber} onChange={e => setFormData({...formData, roomNumber: e.target.value})}/>
+                </div>
+              </div>
+            </div>
+            <div className="flex gap-3 pt-4 border-t border-slate-100">
+                <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 bg-slate-100 hover:bg-slate-200 p-3 rounded-xl font-bold text-slate-600 transition-colors">Cancel</button>
+                <button type="submit" className="flex-1 bg-green-600 hover:bg-green-700 text-white p-3 rounded-xl font-bold shadow-lg shadow-green-100 transition-all">Save Details</button>
+            </div>
+          </form>
+        </div>
+      )}
 
-        function isDueSoon(dueDay) {
-            if (!dueDay) return false;
-            const today = new Date();
-            const currentDay = today.getDate();
-            const diff = parseInt(dueDay) - cur
+      {/* Payment Modal */}
+      {isPaymentModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+          <form onSubmit={handleRecordPayment} className="bg-white p-6 rounded-3xl w-full max-w-md shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-200">
+            <h2 className="text-xl font-bold text-slate-800">Record Payment</h2>
+            <div className="p-4 bg-green-50 border border-green-100 rounded-2xl">
+              <p className="text-[10px] text-green-600 font-black uppercase tracking-wider">Target Tenant</p>
+              <p className="text-sm font-bold text-green-900">{selectedTenantForPayment?.name} — Room {selectedTenantForPayment?.roomNumber}</p>
+            </div>
+            <div>
+              <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Amount Received (KES)</label>
+              <input required className="w-full border border-slate-200 p-3 rounded-xl outline-none focus:ring-2 focus:ring-green-500 font-black text-2xl text-green-700" type="number" value={paymentData.amount} onChange={e => setPaymentData({...paymentData, amount: e.target.value})}/>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Method</label>
+                <select className="w-full border border-slate-200 p-3 rounded-xl outline-none" value={paymentData.method} onChange={e => setPaymentData({...paymentData, method: e.target.value})}>
+                  <option>M-Pesa</option><option>Cash</option><option>Bank Transfer</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Ref/Code</label>
+                <input className="w-full border border-slate-200 p-3 rounded-xl outline-none" placeholder="Receipt #" value={paymentData.reference} onChange={e => setPaymentData({...paymentData, reference: e.target.value})}/>
+              </div>
+            </div>
+            <div className="flex gap-3 pt-4">
+                <button type="button" onClick={() => setIsPaymentModalOpen(false)} className="flex-1 bg-slate-100 p-3 rounded-xl font-bold text-slate-600 transition-colors">Cancel</button>
+                <button type="submit" className="flex-1 bg-green-600 text-white p-3 rounded-xl font-bold shadow-lg shadow-green-100 transition-all">Confirm Payment</button>
+            </div>
+          </form>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function StatCard({ title, value, icon, color = "text-slate-800" }) {
+  return (
+    <div className="bg-white p-5 rounded-2xl border border-slate-200 flex items-start justify-between shadow-sm transition-all hover:shadow-md">
+      <div>
+        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{title}</p>
+        <p className={`text-xl font-black ${color}`}>{value}</p>
+      </div>
+      <div className="bg-slate-50 p-2.5 rounded-xl">{icon}</div>
+    </div>
+  );
+}
