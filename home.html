@@ -29,6 +29,63 @@
             0%, 100% { opacity: 1; }
             50% { opacity: .5; }
         }
+
+        /* Mobile Responsive Table Transformation */
+        @media (max-width: 768px) {
+            #responsive-table-container table, 
+            #responsive-table-container thead, 
+            #responsive-table-container tbody, 
+            #responsive-table-container th, 
+            #responsive-table-container td, 
+            #responsive-table-container tr { 
+                display: block; 
+            }
+            #responsive-table-container thead tr { 
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
+            #responsive-table-container tr { 
+                margin-bottom: 1rem;
+                border: 1px solid #e2e8f0;
+                border-radius: 1rem;
+                background: white;
+                padding: 0.5rem;
+            }
+            #responsive-table-container td { 
+                border: none;
+                position: relative;
+                padding-left: 50%; 
+                text-align: right;
+                min-height: 40px;
+                display: flex;
+                align-items: center;
+                justify-content: flex-end;
+            }
+            #responsive-table-container td:before { 
+                position: absolute;
+                left: 12px;
+                width: 45%; 
+                padding-right: 10px; 
+                white-space: nowrap;
+                content: attr(data-label);
+                font-weight: 700;
+                text-align: left;
+                font-size: 0.65rem;
+                color: #64748b;
+                text-transform: uppercase;
+            }
+            #responsive-table-container td.actions-cell {
+                padding-left: 12px;
+                justify-content: center;
+                border-top: 1px solid #f1f5f9;
+                margin-top: 0.5rem;
+                padding-top: 1rem;
+            }
+            #responsive-table-container td.actions-cell:before {
+                display: none;
+            }
+        }
     </style>
 </head>
 <body class="bg-[#f8fafc] text-slate-900 min-h-screen">
@@ -36,63 +93,86 @@
     <!-- Main UI -->
     <div id="main-ui" class="no-print">
         <nav class="bg-white border-b border-slate-200 sticky top-0 z-40">
-            <div class="max-w-[1400px] mx-auto px-4 md:px-8 py-4 flex justify-between items-center">
-                <div class="flex items-center gap-3">
-                    <div class="bg-indigo-600 p-2 rounded-lg text-white">
-                        <i data-lucide="building-2" size="20"></i>
+            <div class="max-w-[1400px] mx-auto px-4 md:px-8 py-3 md:py-4 flex justify-between items-center">
+                <div class="flex items-center gap-2 md:gap-3">
+                    <div class="bg-indigo-600 p-1.5 md:p-2 rounded-lg text-white">
+                        <i data-lucide="building-2" size="18"></i>
                     </div>
-                    <h1 class="text-xl font-bold tracking-tight text-slate-800">CHALLY <span class="text-indigo-600">APARTMENTS</span></h1>
+                    <h1 class="text-lg md:text-xl font-bold tracking-tight text-slate-800">
+                        CHALLY <span class="text-indigo-600 block md:inline text-[10px] md:text-lg">APARTMENTS</span>
+                    </h1>
                 </div>
                 
-                <div class="flex items-center gap-3">
-                    <!-- Notifications Button -->
-                    <div class="relative group mr-2">
+                <div class="flex items-center gap-1 md:gap-3">
+                    <!-- Notifications -->
+                    <div class="relative group">
                         <button class="relative p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-all">
-                            <i data-lucide="bell" size="22"></i>
-                            <span id="notif-badge" class="hidden absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 border-2 border-white rounded-full"></span>
+                            <i data-lucide="bell" size="20"></i>
+                            <span id="notif-badge" class="hidden absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 border-2 border-white rounded-full"></span>
                         </button>
-                        <div class="absolute right-0 mt-2 w-72 bg-white border border-slate-200 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 p-4">
+                        <div class="absolute right-0 mt-2 w-64 md:w-72 bg-white border border-slate-200 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 p-4">
                             <h4 class="font-bold text-sm text-slate-800 mb-3">Alerts & Expiries</h4>
-                            <div id="notif-list" class="space-y-3 max-h-60 overflow-y-auto">
-                                <p class="text-xs text-slate-400 italic">No urgent notifications</p>
+                            <div id="notif-list" class="space-y-3 max-h-60 overflow-y-auto text-xs">
+                                <p class="text-slate-400 italic">No urgent notifications</p>
                             </div>
                         </div>
                     </div>
 
-                    <div class="relative group">
-                        <button class="flex items-center gap-2 px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg text-sm font-semibold transition-all border border-slate-200">
-                            <i data-lucide="file-text" size="18"></i> Global Reports
+                    <!-- Mobile Menu Trigger -->
+                    <div class="md:hidden relative group">
+                        <button class="p-2 text-slate-600 hover:bg-slate-50 rounded-lg">
+                            <i data-lucide="more-vertical" size="20"></i>
                         </button>
-                        <div class="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-                            <button onclick="generateMonthlyStatement()" class="w-full text-left px-4 py-3 text-sm hover:bg-slate-50 border-b border-slate-100 first:rounded-t-xl">Monthly Summary</button>
-                            <button onclick="generateYearlyStatement()" class="w-full text-left px-4 py-3 text-sm hover:bg-slate-50 last:rounded-b-xl">Yearly Summary</button>
+                        <div class="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 overflow-hidden">
+                            <button onclick="openModal()" class="w-full text-left px-4 py-3 text-sm hover:bg-slate-50 flex items-center gap-2 border-b">
+                                <i data-lucide="user-plus" size="16"></i> New Registration
+                            </button>
+                            <button onclick="generateMonthlyStatement()" class="w-full text-left px-4 py-3 text-sm hover:bg-slate-50 flex items-center gap-2 border-b">
+                                <i data-lucide="file-text" size="16"></i> Monthly Report
+                            </button>
+                            <button onclick="generateYearlyStatement()" class="w-full text-left px-4 py-3 text-sm hover:bg-slate-50 flex items-center gap-2">
+                                <i data-lucide="archive" size="16"></i> Yearly Report
+                            </button>
                         </div>
                     </div>
-                    <button onclick="openModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-semibold text-sm transition-all flex items-center gap-2 shadow-lg shadow-indigo-100">
-                        <i data-lucide="user-plus" size="18"></i> New Registration
-                    </button>
+
+                    <!-- Desktop Actions -->
+                    <div class="hidden md:flex items-center gap-3">
+                        <div class="relative group">
+                            <button class="flex items-center gap-2 px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg text-sm font-semibold transition-all border border-slate-200">
+                                <i data-lucide="file-text" size="18"></i> Global Reports
+                            </button>
+                            <div class="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                                <button onclick="generateMonthlyStatement()" class="w-full text-left px-4 py-3 text-sm hover:bg-slate-50 border-b border-slate-100 first:rounded-t-xl">Monthly Summary</button>
+                                <button onclick="generateYearlyStatement()" class="w-full text-left px-4 py-3 text-sm hover:bg-slate-50 last:rounded-b-xl">Yearly Summary</button>
+                            </div>
+                        </div>
+                        <button onclick="openModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-semibold text-sm transition-all flex items-center gap-2 shadow-lg shadow-indigo-100">
+                            <i data-lucide="user-plus" size="18"></i> New Registration
+                        </button>
+                    </div>
                 </div>
             </div>
         </nav>
 
-        <main class="max-w-[1400px] mx-auto px-4 md:px-8 py-8 space-y-8">
-            <!-- Stats Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                    <p class="text-xs font-bold text-slate-400 uppercase mb-1">Total Residents</p>
-                    <h2 id="stat-tenants" class="text-3xl font-bold text-slate-900">0</h2>
+        <main class="max-w-[1400px] mx-auto px-4 md:px-8 py-4 md:py-8 space-y-4 md:space-y-8">
+            <!-- Stats Grid - 2 columns on mobile, 4 on desktop -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+                <div class="bg-white p-4 md:p-6 rounded-2xl border border-slate-200 shadow-sm">
+                    <p class="text-[10px] md:text-xs font-bold text-slate-400 uppercase mb-1">Residents</p>
+                    <h2 id="stat-tenants" class="text-xl md:text-3xl font-bold text-slate-900">0</h2>
                 </div>
-                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                    <p class="text-xs font-bold text-slate-400 uppercase mb-1">Due/Overdue</p>
-                    <h2 id="stat-alerts" class="text-3xl font-bold text-red-500">0</h2>
+                <div class="bg-white p-4 md:p-6 rounded-2xl border border-slate-200 shadow-sm">
+                    <p class="text-[10px] md:text-xs font-bold text-slate-400 uppercase mb-1">Due/Overdue</p>
+                    <h2 id="stat-alerts" class="text-xl md:text-3xl font-bold text-red-500">0</h2>
                 </div>
-                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                    <p class="text-xs font-bold text-slate-400 uppercase mb-1">Monthly Revenue</p>
-                    <h2 id="stat-revenue-month" class="text-2xl font-bold text-indigo-600">KES 0</h2>
+                <div class="bg-white p-4 md:p-6 rounded-2xl border border-slate-200 shadow-sm">
+                    <p class="text-[10px] md:text-xs font-bold text-slate-400 uppercase mb-1">Monthly Rev</p>
+                    <h2 id="stat-revenue-month" class="text-sm md:text-2xl font-bold text-indigo-600 truncate">KES 0</h2>
                 </div>
-                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                    <p class="text-xs font-bold text-slate-400 uppercase mb-1">Unpaid Balance</p>
-                    <h2 id="stat-unpaid" class="text-2xl font-bold text-red-400">KES 0</h2>
+                <div class="bg-white p-4 md:p-6 rounded-2xl border border-slate-200 shadow-sm">
+                    <p class="text-[10px] md:text-xs font-bold text-slate-400 uppercase mb-1">Unpaid</p>
+                    <h2 id="stat-unpaid" class="text-sm md:text-2xl font-bold text-red-400 truncate">KES 0</h2>
                 </div>
             </div>
 
@@ -100,115 +180,109 @@
             <div class="flex flex-col md:flex-row gap-4 items-center justify-between">
                 <div class="relative w-full md:w-96">
                     <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size="18"></i>
-                    <input type="text" id="searchInput" oninput="renderTable()" placeholder="Search by name, room or phone..." class="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
+                    <input type="text" id="searchInput" oninput="renderTable()" placeholder="Search resident..." class="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-sm">
                 </div>
-                <div id="auth-status" class="hidden flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-full text-[11px] font-mono text-slate-500">
-                    <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
-                    SECURE_STORAGE_LIVE
+                <div id="auth-status" class="hidden flex items-center gap-2 px-3 py-1 bg-slate-100 rounded-full text-[10px] font-mono text-slate-500">
+                    <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                    SYNC_ON
                 </div>
             </div>
 
-            <!-- Data Table -->
-            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-slate-50/50 border-b border-slate-200">
-                                <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Tenant Details</th>
-                                <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Unit</th>
-                                <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Status</th>
-                                <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Balance</th>
-                                <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase text-right">Ledger Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tableBody" class="divide-y divide-slate-100"></tbody>
-                    </table>
-                </div>
+            <!-- Data Table Container -->
+            <div id="responsive-table-container" class="md:bg-white md:rounded-2xl md:border md:border-slate-200 md:shadow-sm md:overflow-hidden">
+                <table class="w-full text-left border-collapse">
+                    <thead class="hidden md:table-header-group">
+                        <tr class="bg-slate-50/50 border-b border-slate-200">
+                            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Tenant Details</th>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Unit</th>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Status</th>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Balance</th>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody" class="md:divide-y md:divide-slate-100"></tbody>
+                </table>
             </div>
         </main>
     </div>
 
-    <!-- Full Page Overlay (Receipts/Reports) -->
-    <div id="print-overlay" class="fixed inset-0 bg-white z-[100] hidden overflow-y-auto p-8">
-        <div class="max-w-4xl mx-auto border p-12 shadow-sm bg-white min-h-[1000px]" id="print-content"></div>
-        <div class="fixed bottom-8 right-8 flex gap-4 no-print">
-            <button onclick="closePrint()" class="bg-slate-200 px-6 py-2 rounded-lg font-bold hover:bg-slate-300">Close</button>
-            <button onclick="window.print()" class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-indigo-700 flex items-center gap-2">
-                <i data-lucide="download" size="18"></i> Export / Print
+    <!-- Full Page Overlay -->
+    <div id="print-overlay" class="fixed inset-0 bg-white z-[100] hidden overflow-y-auto p-4 md:p-8">
+        <div class="max-w-4xl mx-auto border p-6 md:p-12 shadow-sm bg-white min-h-[1000px]" id="print-content"></div>
+        <div class="fixed bottom-4 right-4 md:bottom-8 md:right-8 flex gap-2 md:gap-4 no-print">
+            <button onclick="closePrint()" class="bg-slate-200 px-4 py-2 rounded-lg font-bold hover:bg-slate-300 text-sm">Close</button>
+            <button onclick="window.print()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-indigo-700 flex items-center gap-2 text-sm shadow-lg">
+                <i data-lucide="printer" size="16"></i> Print / PDF
             </button>
         </div>
     </div>
 
     <!-- Modal Form -->
-    <div id="modal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm hidden items-center justify-center p-4 no-print">
-        <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden scale-95 transition-transform">
-            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+    <div id="modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4 no-print">
+        <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden scale-95 transition-transform flex flex-col max-h-[90vh]">
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
                 <h3 id="modalTitle" class="font-bold text-slate-800">New Transaction</h3>
                 <button onclick="closeModal()" class="p-1 hover:bg-slate-200 rounded-full transition-colors"><i data-lucide="x" size="20"></i></button>
             </div>
-            <form id="recordForm" class="p-6 space-y-4">
+            <form id="recordForm" class="p-6 space-y-4 overflow-y-auto">
                 <input type="hidden" id="editId">
-                <input type="hidden" id="entryType" value="payment"> <!-- 'payment' or 'due' -->
+                <input type="hidden" id="entryType" value="payment">
                 
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="col-span-2 md:col-span-1">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
                         <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Full Name</label>
-                        <input type="text" id="f-name" required class="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50/50">
+                        <input type="text" id="f-name" required class="w-full px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50/50 text-sm">
                     </div>
-                    <div class="col-span-2 md:col-span-1">
+                    <div>
                         <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Phone Number</label>
-                        <input type="tel" id="f-phone" placeholder="0712345678" required class="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50/50">
+                        <input type="tel" id="f-phone" placeholder="0712..." required class="w-full px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50/50 text-sm">
                     </div>
                 </div>
                 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Room Number</label>
-                        <input type="text" id="f-room" required placeholder="A-01" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50/50">
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Room</label>
+                        <input type="text" id="f-room" required placeholder="A1" class="w-full px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50/50 text-sm">
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Floor</label>
-                        <input type="number" id="f-floor" required class="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50/50">
+                        <input type="number" id="f-floor" required class="w-full px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50/50 text-sm">
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-4">
-                    <div id="type-container">
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Room Type</label>
-                        <select id="f-type" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50/50">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Unit Type</label>
+                        <select id="f-type" class="w-full px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50/50 text-sm">
                             <option>Single</option><option>Studio</option><option>1 Bedroom</option><option>2 Bedroom</option>
                         </select>
                     </div>
                     <div>
                         <label id="amountLabel" class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Amount (KES)</label>
-                        <input type="number" id="f-amount" required class="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50/50">
+                        <input type="number" id="f-amount" required class="w-full px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50/50 text-sm">
                     </div>
                 </div>
 
                 <div>
                     <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Date</label>
-                    <input type="date" id="f-date" required class="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50/50">
+                    <input type="date" id="f-date" required class="w-full px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50/50 text-sm">
                 </div>
 
-                <div class="flex gap-3 pt-4">
-                    <button type="button" onclick="closeModal()" class="flex-1 py-3 font-semibold text-slate-500 hover:bg-slate-100 rounded-xl">Cancel</button>
-                    <button type="submit" id="submitBtn" class="flex-1 py-3 font-semibold bg-indigo-600 text-white rounded-xl shadow-lg shadow-indigo-100 hover:bg-indigo-700">Submit Transaction</button>
+                <div class="flex flex-col md:flex-row gap-3 pt-4">
+                    <button type="button" onclick="closeModal()" class="flex-1 py-3 font-semibold text-slate-500 hover:bg-slate-100 rounded-xl order-2 md:order-1">Cancel</button>
+                    <button type="submit" id="submitBtn" class="flex-1 py-3 font-semibold bg-indigo-600 text-white rounded-xl shadow-lg shadow-indigo-100 hover:bg-indigo-700 order-1 md:order-2">Submit</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Custom Confirm Dialog -->
+    <!-- Confirm Dialog -->
     <div id="confirm-modal" class="fixed inset-0 z-[60] bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
-        <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl">
-            <div class="text-red-500 mb-4 bg-red-50 w-12 h-12 rounded-full flex items-center justify-center mx-auto">
-                <i data-lucide="alert-triangle" size="24"></i>
-            </div>
-            <h4 class="text-lg font-bold text-slate-800 text-center mb-2">Delete Client?</h4>
-            <p class="text-sm text-slate-500 text-center mb-6">This will permanently remove all payment history and ledger data for <span id="confirm-tenant-name" class="font-bold text-slate-700"></span>.</p>
-            <div class="flex gap-3">
-                <button onclick="closeConfirm()" class="flex-1 py-2.5 font-semibold text-slate-500 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors">Cancel</button>
-                <button id="confirm-delete-btn" class="flex-1 py-2.5 font-semibold bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors shadow-lg shadow-red-100">Delete All</button>
+        <div class="bg-white w-full max-w-xs rounded-2xl p-6 shadow-2xl">
+            <h4 class="text-base font-bold text-slate-800 text-center mb-4">Delete Client Records?</h4>
+            <div class="flex gap-2">
+                <button onclick="closeConfirm()" class="flex-1 py-2 text-sm font-semibold text-slate-500 bg-slate-100 rounded-lg">No</button>
+                <button id="confirm-delete-btn" class="flex-1 py-2 text-sm font-semibold bg-red-600 text-white rounded-lg">Yes, Delete</button>
             </div>
         </div>
     </div>
@@ -257,11 +331,9 @@
             }, (err) => console.error("Firestore", err));
         }
 
-        // --- CALCULATION LOGIC ---
         function getTenantLedger(room, name) {
             const tenantLogs = records.filter(r => r.room === room && r.name === name);
             tenantLogs.sort((a, b) => new Date(a.date) - new Date(b.date)); 
-            
             let balance = 0;
             const history = tenantLogs.map(entry => {
                 const amount = Number(entry.amount);
@@ -270,30 +342,24 @@
                 else balance += amount;
                 return { ...entry, currentBalance: balance, isPayment };
             });
-
             return { history, balance, lastPayment: tenantLogs.filter(t => t.isPayment !== false).pop() };
         }
 
         function getExpiryInfo(lastPaymentDate) {
-            if (!lastPaymentDate) return { status: 'NO PAYMENT', color: 'bg-slate-100 text-slate-500', diffDays: 999 };
-            const lastPaid = new Date(lastPaymentDate);
-            const expiryDate = new Date(lastPaid);
+            if (!lastPaymentDate) return { status: 'NO DATA', color: 'bg-slate-100 text-slate-500', diffDays: 999 };
+            const expiryDate = new Date(lastPaymentDate);
             expiryDate.setDate(expiryDate.getDate() + 30);
-            
             const today = new Date();
             today.setHours(0,0,0,0);
             const diffDays = Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24));
-            
-            if (diffDays < 0) return { status: 'OVERDUE', color: 'bg-red-100 text-red-700', diffDays, expiryDate };
-            if (diffDays <= 3) return { status: `DUE IN ${diffDays}d`, color: 'bg-amber-100 text-amber-700 notification-pulse', diffDays, expiryDate };
-            return { status: 'ACTIVE', color: 'bg-emerald-100 text-emerald-700', diffDays, expiryDate };
+            if (diffDays < 0) return { status: 'EXPIRED', color: 'bg-red-100 text-red-700', diffDays };
+            if (diffDays <= 3) return { status: `${diffDays}d LEFT`, color: 'bg-amber-100 text-amber-700 notification-pulse', diffDays };
+            return { status: 'ACTIVE', color: 'bg-emerald-100 text-emerald-700', diffDays };
         }
 
-        // --- TABLE RENDER ---
         window.renderTable = () => {
             const queryText = document.getElementById('searchInput').value.toLowerCase();
             const tbody = document.getElementById('tableBody');
-            
             const uniqueTenantsMap = new Map();
             records.forEach(r => {
                 const key = `${r.room}-${r.name}`;
@@ -302,47 +368,42 @@
 
             const filtered = Array.from(uniqueTenantsMap.values()).filter(r => 
                 (r.name?.toLowerCase().includes(queryText)) || 
-                (r.room?.toLowerCase().includes(queryText)) ||
-                (r.phone?.toLowerCase().includes(queryText))
+                (r.room?.toLowerCase().includes(queryText))
             );
 
             tbody.innerHTML = filtered.map(r => {
                 const ledger = getTenantLedger(r.room, r.name);
                 const exp = getExpiryInfo(ledger.lastPayment?.date);
-                
                 return `
                 <tr class="group hover:bg-slate-50 transition-all row-animate">
-                    <td class="px-6 py-4">
-                        <button onclick="viewClientReport('${r.room}', '${r.name}')" class="text-left group/name">
-                            <div class="font-bold text-slate-800 group-hover/name:text-indigo-600 transition-colors">${r.name}</div>
-                            <div class="text-[11px] text-slate-500 flex items-center gap-1">
-                                <i data-lucide="phone" size="10"></i> ${r.phone || 'No Phone'}
-                            </div>
+                    <td class="px-6 py-4" data-label="Tenant">
+                        <button onclick="viewClientReport('${r.room}', '${r.name}')" class="text-left">
+                            <div class="font-bold text-slate-800 md:group-hover:text-indigo-600 transition-colors">${r.name}</div>
+                            <div class="text-[10px] text-slate-400">${r.phone || ''}</div>
                         </button>
                     </td>
-                    <td class="px-6 py-4">
-                        <div class="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded text-[11px] font-bold w-fit">${r.room}</div>
-                        <div class="text-[10px] text-slate-400 mt-1 uppercase font-bold">${r.type || 'Standard'}</div>
+                    <td class="px-6 py-4" data-label="Unit">
+                        <div class="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded text-[10px] font-bold w-fit ml-auto md:ml-0">${r.room}</div>
                     </td>
-                    <td class="px-6 py-4">
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold ${exp.color}">
+                    <td class="px-6 py-4" data-label="Status">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold ${exp.color}">
                             ${exp.status}
                         </span>
                     </td>
-                    <td class="px-6 py-4">
-                        <div class="text-sm font-bold ${ledger.balance > 0 ? 'text-red-500' : 'text-emerald-600'}">
+                    <td class="px-6 py-4" data-label="Balance">
+                        <div class="text-xs font-bold ${ledger.balance > 0 ? 'text-red-500' : 'text-emerald-600'}">
                             KES ${ledger.balance.toLocaleString()}
                         </div>
                     </td>
-                    <td class="px-6 py-4 text-right">
-                        <div class="flex justify-end gap-2">
-                            <button onclick="recordTransaction('${r.id}', 'payment')" class="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all" title="Record Payment">
+                    <td class="px-6 py-4 text-right actions-cell">
+                        <div class="flex justify-center md:justify-end gap-2">
+                            <button onclick="recordTransaction('${r.id}', 'payment')" class="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg">
                                 <i data-lucide="dollar-sign" size="16"></i>
                             </button>
-                            <button onclick="recordTransaction('${r.id}', 'due')" class="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-all" title="Add Rent Due">
+                            <button onclick="recordTransaction('${r.id}', 'due')" class="p-2 text-amber-600 hover:bg-amber-50 rounded-lg">
                                 <i data-lucide="calendar-plus" size="16"></i>
                             </button>
-                            <button onclick="confirmDeleteClient('${r.room}', '${r.name}')" class="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all" title="Delete Client">
+                            <button onclick="confirmDeleteClient('${r.room}', '${r.name}')" class="p-2 text-slate-300 hover:text-red-500 rounded-lg">
                                 <i data-lucide="trash-2" size="16"></i>
                             </button>
                         </div>
@@ -352,11 +413,8 @@
             lucide.createIcons();
         };
 
-        // --- DELETION LOGIC ---
         window.confirmDeleteClient = (room, name) => {
-            document.getElementById('confirm-tenant-name').innerText = name;
             document.getElementById('confirm-modal').classList.replace('hidden', 'flex');
-            
             document.getElementById('confirm-delete-btn').onclick = async () => {
                 const tenantRecs = records.filter(r => r.room === room && r.name === name);
                 const batch = writeBatch(db);
@@ -368,42 +426,34 @@
                 closeConfirm();
             };
         };
-
         window.closeConfirm = () => document.getElementById('confirm-modal').classList.replace('flex', 'hidden');
 
-        // --- TRANSACTIONS ---
         window.recordTransaction = (id, type) => {
             const r = records.find(x => x.id === id);
-            const m = document.getElementById('modal');
             const f = document.getElementById('recordForm');
             f.reset();
-            
             document.getElementById('editId').value = '';
             document.getElementById('entryType').value = type;
-            document.getElementById('modalTitle').innerText = type === 'payment' ? 'Record Payment' : 'Add Rent Due / Extension';
-            document.getElementById('amountLabel').innerText = type === 'payment' ? 'Amount Received' : 'Rent Charged';
-
+            document.getElementById('modalTitle').innerText = type === 'payment' ? 'Record Payment' : 'Add Rent Due';
+            document.getElementById('amountLabel').innerText = type === 'payment' ? 'Amount Paid' : 'Amount Due';
             document.getElementById('f-name').value = r.name;
             document.getElementById('f-phone').value = r.phone;
             document.getElementById('f-room').value = r.room;
             document.getElementById('f-floor').value = r.floor;
             document.getElementById('f-type').value = r.type || 'Single';
             document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
-
             ['f-name', 'f-phone', 'f-room', 'f-floor', 'f-type'].forEach(id => document.getElementById(id).readOnly = true);
-            m.classList.replace('hidden', 'flex');
+            document.getElementById('modal').classList.replace('hidden', 'flex');
         };
 
         window.openModal = () => {
-            const f = document.getElementById('recordForm');
-            f.reset();
-            document.getElementById('modalTitle').innerText = "New Tenant Registration";
+            document.getElementById('recordForm').reset();
+            document.getElementById('modalTitle').innerText = "New Tenant";
             document.getElementById('entryType').value = 'payment';
             document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
             ['f-name', 'f-phone', 'f-room', 'f-floor', 'f-type'].forEach(id => document.getElementById(id).readOnly = false);
             document.getElementById('modal').classList.replace('hidden', 'flex');
         };
-
         window.closeModal = () => document.getElementById('modal').classList.replace('flex', 'hidden');
 
         document.getElementById('recordForm').addEventListener('submit', async (e) => {
@@ -423,59 +473,25 @@
             closeModal();
         });
 
-        // --- REPORTS ---
         window.viewClientReport = (room, name) => {
             const ledger = getTenantLedger(room, name);
             const tenant = records.find(r => r.room === room && r.name === name);
-            if (!tenant) return;
-
             showOverlay(`
-                <div class="flex justify-between items-start mb-12">
-                    <div>
-                        <h1 class="text-3xl font-bold text-indigo-600 mb-1">CHALLY APARTMENTS</h1>
-                        <p class="text-slate-400 font-medium tracking-widest text-xs uppercase">Tenant Financial Statement</p>
+                <h1 class="text-xl font-bold mb-4">Financial Statement: ${tenant.name}</h1>
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="p-4 bg-slate-50 rounded-xl">
+                        <p class="text-[10px] uppercase text-slate-400">Total Paid</p>
+                        <p class="text-lg font-bold text-emerald-600">KES ${ledger.history.reduce((s,i) => i.isPayment ? s+i.amount : s, 0).toLocaleString()}</p>
                     </div>
-                    <div class="text-right">
-                        <p class="text-sm font-bold text-slate-800">${tenant.name}</p>
-                        <p class="text-xs text-slate-500">Unit ${tenant.room} • ${tenant.phone || 'No Contact'}</p>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-3 gap-6 mb-12">
-                    <div class="p-6 bg-slate-50 rounded-2xl border">
-                        <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Total Charges</p>
-                        <p class="text-xl font-bold">KES ${ledger.history.reduce((s,i) => !i.isPayment ? s+i.amount : s, 0).toLocaleString()}</p>
-                    </div>
-                    <div class="p-6 bg-slate-50 rounded-2xl border">
-                        <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Total Paid</p>
-                        <p class="text-xl font-bold text-emerald-600">KES ${ledger.history.reduce((s,i) => i.isPayment ? s+i.amount : s, 0).toLocaleString()}</p>
-                    </div>
-                    <div class="p-6 ${ledger.balance > 0 ? 'bg-red-50 border-red-100' : 'bg-emerald-50 border-emerald-100'} rounded-2xl border">
-                        <p class="text-[10px] font-bold ${ledger.balance > 0 ? 'text-red-400' : 'text-emerald-400'} uppercase mb-1">Outstanding Balance</p>
-                        <p class="text-xl font-bold ${ledger.balance > 0 ? 'text-red-600' : 'text-emerald-600'}">KES ${ledger.balance.toLocaleString()}</p>
+                    <div class="p-4 bg-slate-50 rounded-xl">
+                        <p class="text-[10px] uppercase text-slate-400">Balance</p>
+                        <p class="text-lg font-bold ${ledger.balance > 0 ? 'text-red-600' : 'text-emerald-600'}">KES ${ledger.balance.toLocaleString()}</p>
                     </div>
                 </div>
-
-                <table class="w-full text-left mb-12">
-                    <thead>
-                        <tr class="text-[10px] uppercase text-slate-400 border-b">
-                            <th class="py-3">Date</th>
-                            <th class="py-3">Description</th>
-                            <th class="py-3 text-right">Debit (+)</th>
-                            <th class="py-3 text-right">Credit (-)</th>
-                            <th class="py-3 text-right">Running Balance</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y text-sm">
-                        ${ledger.history.map(row => `
-                            <tr>
-                                <td class="py-4 text-slate-500">${row.date}</td>
-                                <td class="py-4 font-medium">${row.isPayment ? 'Rent Payment' : 'Monthly Rent Charge'}</td>
-                                <td class="py-4 text-right">${!row.isPayment ? 'KES '+row.amount.toLocaleString() : '-'}</td>
-                                <td class="py-4 text-right text-emerald-600">${row.isPayment ? 'KES '+row.amount.toLocaleString() : '-'}</td>
-                                <td class="py-4 text-right font-bold text-slate-800">KES ${row.currentBalance.toLocaleString()}</td>
-                            </tr>
-                        `).join('')}
+                <table class="w-full text-[11px] divide-y">
+                    <thead><tr class="text-slate-400"><th class="py-2 text-left">Date</th><th class="py-2 text-left">Desc</th><th class="py-2 text-right">Bal</th></tr></thead>
+                    <tbody class="divide-y">
+                        ${ledger.history.map(row => `<tr><td class="py-3">${row.date}</td><td class="py-3">${row.isPayment?'Pay':'Due'} (${row.amount})</td><td class="py-3 text-right font-bold">${row.currentBalance}</td></tr>`).join('')}
                     </tbody>
                 </table>
             `);
@@ -483,31 +499,17 @@
 
         window.generateMonthlyStatement = () => {
             const now = new Date();
-            const m = now.getMonth();
-            const y = now.getFullYear();
-            const mRecs = records.filter(r => {
-                const d = new Date(r.date);
-                return d.getMonth() === m && d.getFullYear() === y;
-            });
-            const total = mRecs.reduce((s,r) => r.isPayment ? s + r.amount : s, 0);
-
+            const total = records.filter(r => r.isPayment && new Date(r.date).getMonth() === now.getMonth()).reduce((s,r) => s+r.amount, 0);
             showOverlay(`
-                <h1 class="text-2xl font-bold mb-2">Monthly Revenue Report</h1>
-                <p class="text-slate-500 mb-8 uppercase text-xs tracking-widest">${now.toLocaleString('default', {month:'long'})} ${y}</p>
-                <div class="grid grid-cols-2 gap-4 mb-8">
-                    <div class="p-6 bg-indigo-600 text-white rounded-2xl"><p class="text-xs opacity-70 mb-1">Total Collections</p><p class="text-3xl font-bold">KES ${total.toLocaleString()}</p></div>
-                    <div class="p-6 bg-slate-100 rounded-2xl"><p class="text-xs text-slate-400 mb-1">Transaction Count</p><p class="text-3xl font-bold">${mRecs.length}</p></div>
+                <h1 class="text-xl font-bold mb-2">Monthly Revenue Report</h1>
+                <p class="text-xs text-slate-400 mb-6 uppercase tracking-widest">${now.toLocaleString('default', {month:'long'})} ${now.getFullYear()}</p>
+                <div class="p-6 bg-indigo-600 text-white rounded-2xl mb-6">
+                    <p class="text-xs opacity-70">Total Collected</p>
+                    <p class="text-3xl font-bold">KES ${total.toLocaleString()}</p>
                 </div>
-                <table class="w-full text-left divide-y">
-                    <thead><tr class="text-xs uppercase text-slate-400"><th class="py-2">Date</th><th class="py-2">Tenant</th><th class="py-2 text-right">Amount</th></tr></thead>
-                    <tbody class="divide-y text-sm">
-                        ${mRecs.map(r => `<tr><td class="py-3 text-slate-400">${r.date}</td><td class="py-3 font-bold">${r.name} (${r.room})</td><td class="py-3 text-right">KES ${r.amount.toLocaleString()}</td></tr>`).join('')}
-                    </tbody>
-                </table>
             `);
         };
 
-        // --- UI HELPERS ---
         function showOverlay(html) {
             document.getElementById('print-content').innerHTML = html;
             document.getElementById('print-overlay').classList.remove('hidden');
@@ -521,34 +523,18 @@
 
         function updateStats() {
             const uniqueTenants = new Set(records.map(r => `${r.room}-${r.name}`));
-            let globalUnpaid = 0;
-            uniqueTenants.forEach(key => {
-                const [room, name] = key.split('-');
-                globalUnpaid += Math.max(0, getTenantLedger(room, name).balance);
-            });
             document.getElementById('stat-tenants').innerText = uniqueTenants.size;
-            document.getElementById('stat-unpaid').innerText = `KES ${globalUnpaid.toLocaleString()}`;
         }
 
         function updateNotifications() {
-            const notifList = document.getElementById('notif-list');
-            const alertTenantsMap = new Map();
-            records.forEach(r => {
-                const key = `${r.room}-${r.name}`;
-                if (getExpiryInfo(getTenantLedger(r.room, r.name).lastPayment?.date).diffDays <= 3) {
-                    alertTenantsMap.set(key, r);
-                }
-            });
-            const alerts = Array.from(alertTenantsMap.values());
+            const list = document.getElementById('notif-list');
+            const alerts = records.filter(r => getExpiryInfo(getTenantLedger(r.room, r.name).lastPayment?.date).diffDays <= 3);
             if (alerts.length > 0) {
                 document.getElementById('notif-badge').classList.remove('hidden');
-                notifList.innerHTML = alerts.map(r => `<div class="p-3 bg-slate-50 rounded-lg border-l-4 border-amber-500"><p class="text-[11px] font-bold text-slate-800">${r.name}</p><p class="text-[10px] text-slate-500">Unit ${r.room}</p></div>`).join('');
             } else {
                 document.getElementById('notif-badge').classList.add('hidden');
             }
         }
-
-        window.onload = () => lucide.createIcons();
     </script>
 </body>
 </html>
