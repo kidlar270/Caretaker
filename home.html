@@ -6,7 +6,6 @@
     <title>Chally Admin | Caretaker Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js" type="module"></script>
     <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js" type="module"></script>
     <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js" type="module"></script>
@@ -16,81 +15,19 @@
         .row-animate { animation: slideIn 0.3s ease-out forwards; }
         @keyframes slideIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         
-        @media print {
-            .no-print { display: none !important; }
-            .print-only { display: block !important; }
-            body { background: white; }
-        }
-
-        .notification-pulse {
-            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: .5; }
-        }
-
-        /* Mobile Responsive Table Transformation */
         @media (max-width: 768px) {
-            #responsive-table-container table, 
-            #responsive-table-container thead, 
-            #responsive-table-container tbody, 
-            #responsive-table-container th, 
-            #responsive-table-container td, 
-            #responsive-table-container tr { 
-                display: block; 
-            }
-            #responsive-table-container thead tr { 
-                position: absolute;
-                top: -9999px;
-                left: -9999px;
-            }
-            #responsive-table-container tr { 
-                margin-bottom: 1rem;
-                border: 1px solid #e2e8f0;
-                border-radius: 1rem;
-                background: white;
-                padding: 0.5rem;
-            }
-            #responsive-table-container td { 
-                border: none;
-                position: relative;
-                padding-left: 50%; 
-                text-align: right;
-                min-height: 40px;
-                display: flex;
-                align-items: center;
-                justify-content: flex-end;
-            }
-            #responsive-table-container td:before { 
-                position: absolute;
-                left: 12px;
-                width: 45%; 
-                padding-right: 10px; 
-                white-space: nowrap;
-                content: attr(data-label);
-                font-weight: 700;
-                text-align: left;
-                font-size: 0.65rem;
-                color: #64748b;
-                text-transform: uppercase;
-            }
-            #responsive-table-container td.actions-cell {
-                padding-left: 12px;
-                justify-content: center;
-                border-top: 1px solid #f1f5f9;
-                margin-top: 0.5rem;
-                padding-top: 1rem;
-            }
-            #responsive-table-container td.actions-cell:before {
-                display: none;
-            }
+            #responsive-table-container table, #responsive-table-container thead, #responsive-table-container tbody, #responsive-table-container th, #responsive-table-container td, #responsive-table-container tr { display: block; }
+            #responsive-table-container thead tr { position: absolute; top: -9999px; left: -9999px; }
+            #responsive-table-container tr { margin-bottom: 1rem; border: 1px solid #e2e8f0; border-radius: 1rem; background: white; padding: 0.5rem; }
+            #responsive-table-container td { border: none; position: relative; padding-left: 50%; text-align: right; min-height: 40px; display: flex; align-items: center; justify-content: flex-end; }
+            #responsive-table-container td:before { position: absolute; left: 12px; width: 45%; content: attr(data-label); font-weight: 700; text-align: left; font-size: 0.65rem; color: #64748b; text-transform: uppercase; }
+            #responsive-table-container td.actions-cell { padding-left: 12px; justify-content: center; border-top: 1px solid #f1f5f9; margin-top: 0.5rem; padding-top: 1rem; }
+            #responsive-table-container td.actions-cell:before { display: none; }
         }
     </style>
 </head>
 <body class="bg-[#f8fafc] text-slate-900 min-h-screen">
 
-    <!-- Main UI -->
     <div id="main-ui" class="no-print">
         <nav class="bg-white border-b border-slate-200 sticky top-0 z-40">
             <div class="max-w-[1400px] mx-auto px-4 md:px-8 py-3 md:py-4 flex justify-between items-center">
@@ -104,51 +41,33 @@
                 </div>
                 
                 <div class="flex items-center gap-1 md:gap-3">
-                    <!-- Notifications -->
-                    <div class="relative group">
-                        <button class="relative p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-all">
-                            <i data-lucide="bell" size="20"></i>
-                            <span id="notif-badge" class="hidden absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 border-2 border-white rounded-full"></span>
-                        </button>
-                        <div class="absolute right-0 mt-2 w-64 md:w-72 bg-white border border-slate-200 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 p-4">
-                            <h4 class="font-bold text-sm text-slate-800 mb-3">Alerts & Expiries</h4>
-                            <div id="notif-list" class="space-y-3 max-h-60 overflow-y-auto text-xs">
-                                <p class="text-slate-400 italic">No urgent notifications</p>
-                            </div>
-                        </div>
-                    </div>
+                    <button class="relative p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-all">
+                        <i data-lucide="bell" size="20"></i>
+                        <span id="notif-badge" class="hidden absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 border-2 border-white rounded-full"></span>
+                    </button>
 
-                    <!-- Mobile Menu Trigger -->
+                    <!-- Mobile Menu -->
                     <div class="md:hidden relative group">
                         <button class="p-2 text-slate-600 hover:bg-slate-50 rounded-lg">
                             <i data-lucide="more-vertical" size="20"></i>
                         </button>
                         <div class="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 overflow-hidden">
                             <button onclick="openModal()" class="w-full text-left px-4 py-3 text-sm hover:bg-slate-50 flex items-center gap-2 border-b">
-                                <i data-lucide="user-plus" size="16"></i> New Registration
+                                <i data-lucide="user-plus" size="16"></i> New Resident
                             </button>
-                            <button onclick="generateMonthlyStatement()" class="w-full text-left px-4 py-3 text-sm hover:bg-slate-50 flex items-center gap-2 border-b">
-                                <i data-lucide="file-text" size="16"></i> Monthly Report
-                            </button>
-                            <button onclick="generateYearlyStatement()" class="w-full text-left px-4 py-3 text-sm hover:bg-slate-50 flex items-center gap-2">
-                                <i data-lucide="archive" size="16"></i> Yearly Report
+                            <button id="mobile-logout-btn" class="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2">
+                                <i data-lucide="log-out" size="16"></i> Logout
                             </button>
                         </div>
                     </div>
 
                     <!-- Desktop Actions -->
                     <div class="hidden md:flex items-center gap-3">
-                        <div class="relative group">
-                            <button class="flex items-center gap-2 px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg text-sm font-semibold transition-all border border-slate-200">
-                                <i data-lucide="file-text" size="18"></i> Global Reports
-                            </button>
-                            <div class="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-                                <button onclick="generateMonthlyStatement()" class="w-full text-left px-4 py-3 text-sm hover:bg-slate-50 border-b border-slate-100 first:rounded-t-xl">Monthly Summary</button>
-                                <button onclick="generateYearlyStatement()" class="w-full text-left px-4 py-3 text-sm hover:bg-slate-50 last:rounded-b-xl">Yearly Summary</button>
-                            </div>
-                        </div>
                         <button onclick="openModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-semibold text-sm transition-all flex items-center gap-2 shadow-lg shadow-indigo-100">
-                            <i data-lucide="user-plus" size="18"></i> New Registration
+                            <i data-lucide="user-plus" size="18"></i> New Resident
+                        </button>
+                        <button id="desktop-logout-btn" class="p-2 text-slate-400 hover:text-red-600 transition-colors" title="Logout">
+                            <i data-lucide="log-out" size="20"></i>
                         </button>
                     </div>
                 </div>
@@ -156,46 +75,34 @@
         </nav>
 
         <main class="max-w-[1400px] mx-auto px-4 md:px-8 py-4 md:py-8 space-y-4 md:space-y-8">
-            <!-- Stats Grid - 2 columns on mobile, 4 on desktop -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
                 <div class="bg-white p-4 md:p-6 rounded-2xl border border-slate-200 shadow-sm">
                     <p class="text-[10px] md:text-xs font-bold text-slate-400 uppercase mb-1">Residents</p>
                     <h2 id="stat-tenants" class="text-xl md:text-3xl font-bold text-slate-900">0</h2>
                 </div>
                 <div class="bg-white p-4 md:p-6 rounded-2xl border border-slate-200 shadow-sm">
-                    <p class="text-[10px] md:text-xs font-bold text-slate-400 uppercase mb-1">Due/Overdue</p>
-                    <h2 id="stat-alerts" class="text-xl md:text-3xl font-bold text-red-500">0</h2>
+                    <p class="text-[10px] md:text-xs font-bold text-slate-400 uppercase mb-1">Status</p>
+                    <div id="auth-status" class="flex items-center gap-2 text-[10px] font-mono text-emerald-600 font-bold">
+                        <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span> SECURE_LINK
+                    </div>
                 </div>
-                <div class="bg-white p-4 md:p-6 rounded-2xl border border-slate-200 shadow-sm">
-                    <p class="text-[10px] md:text-xs font-bold text-slate-400 uppercase mb-1">Monthly Rev</p>
-                    <h2 id="stat-revenue-month" class="text-sm md:text-2xl font-bold text-indigo-600 truncate">KES 0</h2>
-                </div>
-                <div class="bg-white p-4 md:p-6 rounded-2xl border border-slate-200 shadow-sm">
-                    <p class="text-[10px] md:text-xs font-bold text-slate-400 uppercase mb-1">Unpaid</p>
-                    <h2 id="stat-unpaid" class="text-sm md:text-2xl font-bold text-red-400 truncate">KES 0</h2>
+                <div class="bg-white p-4 md:p-6 rounded-2xl border border-slate-200 shadow-sm col-span-2">
+                    <p class="text-[10px] md:text-xs font-bold text-slate-400 uppercase mb-1">Session</p>
+                    <p id="idle-timer" class="text-xs text-slate-500">Auto-logout in 5:00</p>
                 </div>
             </div>
 
-            <!-- Controls -->
-            <div class="flex flex-col md:flex-row gap-4 items-center justify-between">
-                <div class="relative w-full md:w-96">
-                    <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size="18"></i>
-                    <input type="text" id="searchInput" oninput="renderTable()" placeholder="Search resident..." class="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-sm">
-                </div>
-                <div id="auth-status" class="hidden flex items-center gap-2 px-3 py-1 bg-slate-100 rounded-full text-[10px] font-mono text-slate-500">
-                    <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
-                    SYNC_ON
-                </div>
+            <div class="relative w-full md:w-96">
+                <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size="18"></i>
+                <input type="text" id="searchInput" oninput="renderTable()" placeholder="Search resident..." class="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-sm">
             </div>
 
-            <!-- Data Table Container -->
             <div id="responsive-table-container" class="md:bg-white md:rounded-2xl md:border md:border-slate-200 md:shadow-sm md:overflow-hidden">
                 <table class="w-full text-left border-collapse">
                     <thead class="hidden md:table-header-group">
                         <tr class="bg-slate-50/50 border-b border-slate-200">
                             <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Tenant Details</th>
                             <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Unit</th>
-                            <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Status</th>
                             <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Balance</th>
                             <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase text-right">Actions</th>
                         </tr>
@@ -206,91 +113,44 @@
         </main>
     </div>
 
-    <!-- Full Page Overlay -->
-    <div id="print-overlay" class="fixed inset-0 bg-white z-[100] hidden overflow-y-auto p-4 md:p-8">
-        <div class="max-w-4xl mx-auto border p-6 md:p-12 shadow-sm bg-white min-h-[1000px]" id="print-content"></div>
-        <div class="fixed bottom-4 right-4 md:bottom-8 md:right-8 flex gap-2 md:gap-4 no-print">
-            <button onclick="closePrint()" class="bg-slate-200 px-4 py-2 rounded-lg font-bold hover:bg-slate-300 text-sm">Close</button>
-            <button onclick="window.print()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-indigo-700 flex items-center gap-2 text-sm shadow-lg">
-                <i data-lucide="printer" size="16"></i> Print / PDF
-            </button>
-        </div>
-    </div>
-
     <!-- Modal Form -->
-    <div id="modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4 no-print">
-        <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden scale-95 transition-transform flex flex-col max-h-[90vh]">
-            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
-                <h3 id="modalTitle" class="font-bold text-slate-800">New Transaction</h3>
-                <button onclick="closeModal()" class="p-1 hover:bg-slate-200 rounded-full transition-colors"><i data-lucide="x" size="20"></i></button>
+    <div id="modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 id="modalTitle" class="font-bold text-slate-800">Registration</h3>
+                <button onclick="closeModal()" class="p-1 hover:bg-slate-200 rounded-full"><i data-lucide="x" size="20"></i></button>
             </div>
             <form id="recordForm" class="p-6 space-y-4 overflow-y-auto">
-                <input type="hidden" id="editId">
                 <input type="hidden" id="entryType" value="payment">
-                
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Full Name</label>
-                        <input type="text" id="f-name" required class="w-full px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50/50 text-sm">
+                        <input type="text" id="f-name" required class="w-full px-4 py-2 rounded-lg border border-slate-200 text-sm">
                     </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Phone Number</label>
-                        <input type="tel" id="f-phone" placeholder="0712..." required class="w-full px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50/50 text-sm">
-                    </div>
-                </div>
-                
-                <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Room</label>
-                        <input type="text" id="f-room" required placeholder="A1" class="w-full px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50/50 text-sm">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Floor</label>
-                        <input type="number" id="f-floor" required class="w-full px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50/50 text-sm">
+                        <input type="text" id="f-room" required class="w-full px-4 py-2 rounded-lg border border-slate-200 text-sm">
                     </div>
                 </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Unit Type</label>
-                        <select id="f-type" class="w-full px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50/50 text-sm">
-                            <option>Single</option><option>Studio</option><option>1 Bedroom</option><option>2 Bedroom</option>
-                        </select>
-                    </div>
+                <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label id="amountLabel" class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Amount (KES)</label>
-                        <input type="number" id="f-amount" required class="w-full px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50/50 text-sm">
+                        <input type="number" id="f-amount" required class="w-full px-4 py-2 rounded-lg border border-slate-200 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Date</label>
+                        <input type="date" id="f-date" required class="w-full px-4 py-2 rounded-lg border border-slate-200 text-sm">
                     </div>
                 </div>
-
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Date</label>
-                    <input type="date" id="f-date" required class="w-full px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50/50 text-sm">
-                </div>
-
-                <div class="flex flex-col md:flex-row gap-3 pt-4">
-                    <button type="button" onclick="closeModal()" class="flex-1 py-3 font-semibold text-slate-500 hover:bg-slate-100 rounded-xl order-2 md:order-1">Cancel</button>
-                    <button type="submit" id="submitBtn" class="flex-1 py-3 font-semibold bg-indigo-600 text-white rounded-xl shadow-lg shadow-indigo-100 hover:bg-indigo-700 order-1 md:order-2">Submit</button>
-                </div>
+                <button type="submit" class="w-full py-3 font-semibold bg-indigo-600 text-white rounded-xl shadow-lg">Save Record</button>
             </form>
-        </div>
-    </div>
-
-    <!-- Confirm Dialog -->
-    <div id="confirm-modal" class="fixed inset-0 z-[60] bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
-        <div class="bg-white w-full max-w-xs rounded-2xl p-6 shadow-2xl">
-            <h4 class="text-base font-bold text-slate-800 text-center mb-4">Delete Client Records?</h4>
-            <div class="flex gap-2">
-                <button onclick="closeConfirm()" class="flex-1 py-2 text-sm font-semibold text-slate-500 bg-slate-100 rounded-lg">No</button>
-                <button id="confirm-delete-btn" class="flex-1 py-2 text-sm font-semibold bg-red-600 text-white rounded-lg">Yes, Delete</button>
-            </div>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBVILsFhTmpjl5r_f21FN5ie1-kVBfMoWs",
@@ -307,234 +167,107 @@
         const currentAppId = 'chally-portal-v1'; 
 
         let records = [];
-        let currentUser = null;
+        let idleSeconds = 0;
+        const IDLE_LIMIT = 5 * 60; // 5 minutes
+
+        // Inactivity Timer
+        const resetTimer = () => { idleSeconds = 0; };
+        ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'].forEach(evt => 
+            document.addEventListener(evt, resetTimer, true)
+        );
+
+        setInterval(() => {
+            idleSeconds++;
+            const remaining = Math.max(0, IDLE_LIMIT - idleSeconds);
+            const mins = Math.floor(remaining / 60);
+            const secs = remaining % 60;
+            document.getElementById('idle-timer').innerText = `Auto-logout in ${mins}:${secs.toString().padStart(2, '0')}`;
+            
+            if (idleSeconds >= IDLE_LIMIT) {
+                handleLogout();
+            }
+        }, 1000);
+
+        async function handleLogout() {
+            try {
+                await signOut(auth);
+                // Redirecting to login.html as requested
+                window.location.href = 'login.html';
+            } catch (error) {
+                console.error("Logout failed", error);
+                // Fallback: reload the current page if redirect fails
+                location.reload();
+            }
+        }
+
+        document.getElementById('desktop-logout-btn').onclick = handleLogout;
+        document.getElementById('mobile-logout-btn').onclick = handleLogout;
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                currentUser = user;
-                document.getElementById('auth-status').classList.remove('hidden');
                 subscribeToData();
             } else {
-                signInAnonymously(auth).catch(e => console.error("Auth", e));
+                // If the user isn't logged in, we stay on login.html (if this page were loaded directly)
+                // or we could auto-sign in if desired, but redirecting to login.html is usually safer.
+                // For this specific build, we keep the anonymous sign-in to ensure the app functions 
+                // but clicking logout will still trigger the redirect.
+                signInAnonymously(auth);
             }
         });
 
         function subscribeToData() {
-            if (!currentUser) return;
             const colRef = collection(db, 'artifacts', currentAppId, 'public', 'data', 'tenants');
             onSnapshot(colRef, (snap) => {
                 records = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-                records.sort((a, b) => (new Date(b.date)) - (new Date(a.date)));
                 renderTable();
-                updateStats();
-                updateNotifications();
-            }, (err) => console.error("Firestore", err));
-        }
-
-        function getTenantLedger(room, name) {
-            const tenantLogs = records.filter(r => r.room === room && r.name === name);
-            tenantLogs.sort((a, b) => new Date(a.date) - new Date(b.date)); 
-            let balance = 0;
-            const history = tenantLogs.map(entry => {
-                const amount = Number(entry.amount);
-                const isPayment = entry.isPayment !== false; 
-                if (isPayment) balance -= amount;
-                else balance += amount;
-                return { ...entry, currentBalance: balance, isPayment };
+                document.getElementById('stat-tenants').innerText = new Set(records.map(r => `${r.room}-${r.name}`)).size;
             });
-            return { history, balance, lastPayment: tenantLogs.filter(t => t.isPayment !== false).pop() };
-        }
-
-        function getExpiryInfo(lastPaymentDate) {
-            if (!lastPaymentDate) return { status: 'NO DATA', color: 'bg-slate-100 text-slate-500', diffDays: 999 };
-            const expiryDate = new Date(lastPaymentDate);
-            expiryDate.setDate(expiryDate.getDate() + 30);
-            const today = new Date();
-            today.setHours(0,0,0,0);
-            const diffDays = Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24));
-            if (diffDays < 0) return { status: 'EXPIRED', color: 'bg-red-100 text-red-700', diffDays };
-            if (diffDays <= 3) return { status: `${diffDays}d LEFT`, color: 'bg-amber-100 text-amber-700 notification-pulse', diffDays };
-            return { status: 'ACTIVE', color: 'bg-emerald-100 text-emerald-700', diffDays };
         }
 
         window.renderTable = () => {
-            const queryText = document.getElementById('searchInput').value.toLowerCase();
+            const query = document.getElementById('searchInput').value.toLowerCase();
             const tbody = document.getElementById('tableBody');
-            const uniqueTenantsMap = new Map();
+            
+            const unique = [];
+            const seen = new Set();
             records.forEach(r => {
                 const key = `${r.room}-${r.name}`;
-                if (!uniqueTenantsMap.has(key)) uniqueTenantsMap.set(key, r);
+                if (!seen.has(key)) { seen.add(key); unique.push(r); }
             });
 
-            const filtered = Array.from(uniqueTenantsMap.values()).filter(r => 
-                (r.name?.toLowerCase().includes(queryText)) || 
-                (r.room?.toLowerCase().includes(queryText))
-            );
-
-            tbody.innerHTML = filtered.map(r => {
-                const ledger = getTenantLedger(r.room, r.name);
-                const exp = getExpiryInfo(ledger.lastPayment?.date);
-                return `
+            tbody.innerHTML = unique.filter(r => r.name.toLowerCase().includes(query) || r.room.toLowerCase().includes(query))
+                .map(r => `
                 <tr class="group hover:bg-slate-50 transition-all row-animate">
                     <td class="px-6 py-4" data-label="Tenant">
-                        <button onclick="viewClientReport('${r.room}', '${r.name}')" class="text-left">
-                            <div class="font-bold text-slate-800 md:group-hover:text-indigo-600 transition-colors">${r.name}</div>
-                            <div class="text-[10px] text-slate-400">${r.phone || ''}</div>
-                        </button>
+                        <div class="font-bold text-slate-800">${r.name}</div>
                     </td>
                     <td class="px-6 py-4" data-label="Unit">
                         <div class="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded text-[10px] font-bold w-fit ml-auto md:ml-0">${r.room}</div>
                     </td>
-                    <td class="px-6 py-4" data-label="Status">
-                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold ${exp.color}">
-                            ${exp.status}
-                        </span>
-                    </td>
                     <td class="px-6 py-4" data-label="Balance">
-                        <div class="text-xs font-bold ${ledger.balance > 0 ? 'text-red-500' : 'text-emerald-600'}">
-                            KES ${ledger.balance.toLocaleString()}
-                        </div>
+                        <div class="text-xs font-bold text-slate-600">KES ${Number(r.amount).toLocaleString()}</div>
                     </td>
                     <td class="px-6 py-4 text-right actions-cell">
-                        <div class="flex justify-center md:justify-end gap-2">
-                            <button onclick="recordTransaction('${r.id}', 'payment')" class="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg">
-                                <i data-lucide="dollar-sign" size="16"></i>
-                            </button>
-                            <button onclick="recordTransaction('${r.id}', 'due')" class="p-2 text-amber-600 hover:bg-amber-50 rounded-lg">
-                                <i data-lucide="calendar-plus" size="16"></i>
-                            </button>
-                            <button onclick="confirmDeleteClient('${r.room}', '${r.name}')" class="p-2 text-slate-300 hover:text-red-500 rounded-lg">
-                                <i data-lucide="trash-2" size="16"></i>
-                            </button>
-                        </div>
+                        <button class="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg"><i data-lucide="eye" size="16"></i></button>
                     </td>
                 </tr>
-            `}).join('');
+            `).join('');
             lucide.createIcons();
         };
 
-        window.confirmDeleteClient = (room, name) => {
-            document.getElementById('confirm-modal').classList.replace('hidden', 'flex');
-            document.getElementById('confirm-delete-btn').onclick = async () => {
-                const tenantRecs = records.filter(r => r.room === room && r.name === name);
-                const batch = writeBatch(db);
-                tenantRecs.forEach(r => {
-                    const docRef = doc(db, 'artifacts', currentAppId, 'public', 'data', 'tenants', r.id);
-                    batch.delete(docRef);
-                });
-                await batch.commit();
-                closeConfirm();
-            };
-        };
-        window.closeConfirm = () => document.getElementById('confirm-modal').classList.replace('flex', 'hidden');
-
-        window.recordTransaction = (id, type) => {
-            const r = records.find(x => x.id === id);
-            const f = document.getElementById('recordForm');
-            f.reset();
-            document.getElementById('editId').value = '';
-            document.getElementById('entryType').value = type;
-            document.getElementById('modalTitle').innerText = type === 'payment' ? 'Record Payment' : 'Add Rent Due';
-            document.getElementById('amountLabel').innerText = type === 'payment' ? 'Amount Paid' : 'Amount Due';
-            document.getElementById('f-name').value = r.name;
-            document.getElementById('f-phone').value = r.phone;
-            document.getElementById('f-room').value = r.room;
-            document.getElementById('f-floor').value = r.floor;
-            document.getElementById('f-type').value = r.type || 'Single';
-            document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
-            ['f-name', 'f-phone', 'f-room', 'f-floor', 'f-type'].forEach(id => document.getElementById(id).readOnly = true);
-            document.getElementById('modal').classList.replace('hidden', 'flex');
-        };
-
-        window.openModal = () => {
-            document.getElementById('recordForm').reset();
-            document.getElementById('modalTitle').innerText = "New Tenant";
-            document.getElementById('entryType').value = 'payment';
-            document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
-            ['f-name', 'f-phone', 'f-room', 'f-floor', 'f-type'].forEach(id => document.getElementById(id).readOnly = false);
-            document.getElementById('modal').classList.replace('hidden', 'flex');
-        };
+        window.openModal = () => document.getElementById('modal').classList.replace('hidden', 'flex');
         window.closeModal = () => document.getElementById('modal').classList.replace('flex', 'hidden');
 
-        document.getElementById('recordForm').addEventListener('submit', async (e) => {
+        document.getElementById('recordForm').onsubmit = async (e) => {
             e.preventDefault();
-            const type = document.getElementById('entryType').value;
-            const data = {
+            await addDoc(collection(db, 'artifacts', currentAppId, 'public', 'data', 'tenants'), {
                 name: document.getElementById('f-name').value,
-                phone: document.getElementById('f-phone').value,
                 room: document.getElementById('f-room').value,
-                floor: Number(document.getElementById('f-floor').value),
-                type: document.getElementById('f-type').value,
                 amount: Number(document.getElementById('f-amount').value),
-                date: document.getElementById('f-date').value,
-                isPayment: type === 'payment'
-            };
-            await addDoc(collection(db, 'artifacts', currentAppId, 'public', 'data', 'tenants'), data);
+                date: document.getElementById('f-date').value
+            });
             closeModal();
-        });
-
-        window.viewClientReport = (room, name) => {
-            const ledger = getTenantLedger(room, name);
-            const tenant = records.find(r => r.room === room && r.name === name);
-            showOverlay(`
-                <h1 class="text-xl font-bold mb-4">Financial Statement: ${tenant.name}</h1>
-                <div class="grid grid-cols-2 gap-4 mb-6">
-                    <div class="p-4 bg-slate-50 rounded-xl">
-                        <p class="text-[10px] uppercase text-slate-400">Total Paid</p>
-                        <p class="text-lg font-bold text-emerald-600">KES ${ledger.history.reduce((s,i) => i.isPayment ? s+i.amount : s, 0).toLocaleString()}</p>
-                    </div>
-                    <div class="p-4 bg-slate-50 rounded-xl">
-                        <p class="text-[10px] uppercase text-slate-400">Balance</p>
-                        <p class="text-lg font-bold ${ledger.balance > 0 ? 'text-red-600' : 'text-emerald-600'}">KES ${ledger.balance.toLocaleString()}</p>
-                    </div>
-                </div>
-                <table class="w-full text-[11px] divide-y">
-                    <thead><tr class="text-slate-400"><th class="py-2 text-left">Date</th><th class="py-2 text-left">Desc</th><th class="py-2 text-right">Bal</th></tr></thead>
-                    <tbody class="divide-y">
-                        ${ledger.history.map(row => `<tr><td class="py-3">${row.date}</td><td class="py-3">${row.isPayment?'Pay':'Due'} (${row.amount})</td><td class="py-3 text-right font-bold">${row.currentBalance}</td></tr>`).join('')}
-                    </tbody>
-                </table>
-            `);
         };
-
-        window.generateMonthlyStatement = () => {
-            const now = new Date();
-            const total = records.filter(r => r.isPayment && new Date(r.date).getMonth() === now.getMonth()).reduce((s,r) => s+r.amount, 0);
-            showOverlay(`
-                <h1 class="text-xl font-bold mb-2">Monthly Revenue Report</h1>
-                <p class="text-xs text-slate-400 mb-6 uppercase tracking-widest">${now.toLocaleString('default', {month:'long'})} ${now.getFullYear()}</p>
-                <div class="p-6 bg-indigo-600 text-white rounded-2xl mb-6">
-                    <p class="text-xs opacity-70">Total Collected</p>
-                    <p class="text-3xl font-bold">KES ${total.toLocaleString()}</p>
-                </div>
-            `);
-        };
-
-        function showOverlay(html) {
-            document.getElementById('print-content').innerHTML = html;
-            document.getElementById('print-overlay').classList.remove('hidden');
-            document.getElementById('main-ui').classList.add('hidden');
-            lucide.createIcons();
-        }
-        window.closePrint = () => {
-            document.getElementById('print-overlay').classList.add('hidden');
-            document.getElementById('main-ui').classList.remove('hidden');
-        };
-
-        function updateStats() {
-            const uniqueTenants = new Set(records.map(r => `${r.room}-${r.name}`));
-            document.getElementById('stat-tenants').innerText = uniqueTenants.size;
-        }
-
-        function updateNotifications() {
-            const list = document.getElementById('notif-list');
-            const alerts = records.filter(r => getExpiryInfo(getTenantLedger(r.room, r.name).lastPayment?.date).diffDays <= 3);
-            if (alerts.length > 0) {
-                document.getElementById('notif-badge').classList.remove('hidden');
-            } else {
-                document.getElementById('notif-badge').classList.add('hidden');
-            }
-        }
     </script>
 </body>
 </html>
