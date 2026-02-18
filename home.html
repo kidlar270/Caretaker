@@ -191,8 +191,8 @@
         async function handleLogout() {
             try {
                 await signOut(auth);
-                // Redirecting to login.html as requested
-                window.location.href = 'login.html';
+                // Redirecting to index.html as requested
+                window.location.href = 'index.html';
             } catch (error) {
                 console.error("Logout failed", error);
                 // Fallback: reload the current page if redirect fails
@@ -207,10 +207,7 @@
             if (user) {
                 subscribeToData();
             } else {
-                // If the user isn't logged in, we stay on login.html (if this page were loaded directly)
-                // or we could auto-sign in if desired, but redirecting to login.html is usually safer.
-                // For this specific build, we keep the anonymous sign-in to ensure the app functions 
-                // but clicking logout will still trigger the redirect.
+                // Keep anonymous sign-in to ensure the app stays functional for public demos
                 signInAnonymously(auth);
             }
         });
